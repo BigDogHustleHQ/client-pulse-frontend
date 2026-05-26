@@ -1,9 +1,15 @@
 import { render } from '@testing-library/react';
 import Page from './page';
 
+const mockRedirect = jest.fn();
+
+jest.mock('next/navigation', () => ({
+  redirect: (url: string) => mockRedirect(url),
+}));
+
 describe('Page', () => {
-  it('renders without crashing', () => {
+  it('redirects to /login', () => {
     render(<Page />);
-    expect(document.body).toBeInTheDocument();
+    expect(mockRedirect).toHaveBeenCalledWith('/login');
   });
 });
