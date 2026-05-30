@@ -12,8 +12,12 @@ test.describe('ClientPulse shell', () => {
     await expect(
       page.getByRole('heading', { name: 'Welcome back' }),
     ).toBeVisible();
-    await expect(page.getByLabel('Business Email')).toBeVisible();
-    await expect(page.getByLabel('Password')).toBeVisible();
+    // exact: true — Playwright's getByLabel is substring/case-insensitive by
+    // default, so 'Password' would also match the "Show password" toggle.
+    await expect(
+      page.getByLabel('Business Email', { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Sign in to platform' }),
     ).toBeVisible();

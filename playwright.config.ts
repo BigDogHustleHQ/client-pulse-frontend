@@ -11,6 +11,10 @@ const clerkEnv = {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
     'pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk',
   CLERK_SECRET_KEY: 'sk_test_ZHVtbXlfc2VjcmV0X2tleV9mb3JfY2lfYnVpbGRzXw',
+  // Skip Clerk's dev-browser handshake so pages render without a live backend.
+  // This is inlined at BUILD time — build with it set:
+  //   NEXT_PUBLIC_E2E_BYPASS_CLERK=true npm run build
+  NEXT_PUBLIC_E2E_BYPASS_CLERK: 'true',
 };
 
 export default defineConfig({

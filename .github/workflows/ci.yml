@@ -43,7 +43,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium chromium-headless-shell
       - run: npm run test:storybook
 
   # Job 3: e2e — Playwright smoke tests against the production build.
@@ -55,6 +55,9 @@ jobs:
       # playwright.config.ts). Safe to expose — they reference no real tenant.
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk
       CLERK_SECRET_KEY: sk_test_ZHVtbXlfc2VjcmV0X2tleV9mb3JfY2lfYnVpbGRzXw
+      # Skip Clerk's dev-browser handshake (no live backend in CI). Inlined at
+      # build time, so it must be set for both `build` and `start` below.
+      NEXT_PUBLIC_E2E_BYPASS_CLERK: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -63,7 +66,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium chromium-headless-shell
       - run: npm run build
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
@@ -73,12 +76,14 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # Visual regression baseline. Requires the CHROMATIC_PROJECT_TOKEN repo
-  # secret; soft-fails until it is configured so it never blocks merges.
+  # Visual regression baseline. The publish step is skipped (job stays green)
+  # until the CHROMATIC_PROJECT_TOKEN repo secret is configured, so it never
+  # blocks merges on a fresh repo. Once the token is set it captures baselines.
   chromatic:
     name: chromatic
     runs-on: ubuntu-latest
-    continue-on-error: true
+    env:
+      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -89,7 +94,11 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Publish to Chromatic
+        if: ${{ env.CHROMATIC_PROJECT_TOKEN != '' }}
         uses: chromaui/action@latest
         with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          projectToken: ${{ env.CHROMATIC_PROJECT_TOKEN }}
           exitZeroOnChanges: true
+      - name: Chromatic not configured
+        if: ${{ env.CHROMATIC_PROJECT_TOKEN == '' }}
+        run: echo "CHROMATIC_PROJECT_TOKEN not set — skipping visual baseline. Add the repo secret to enable."

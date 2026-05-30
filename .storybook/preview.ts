@@ -4,6 +4,12 @@ import '../src/styles/auth.scss';
 
 const preview: Preview = {
   parameters: {
+    // Components use the App Router (`next/navigation`); without this the
+    // router context isn't mounted and stories throw "expected app router
+    // to be mounted".
+    nextjs: {
+      appDirectory: true,
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
