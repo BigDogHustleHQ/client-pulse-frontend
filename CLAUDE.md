@@ -68,8 +68,7 @@ Path alias `@/*` maps to `src/*`.
 - **Prettier** — single quotes, 2-space tabs (`.prettierrc`)
 - **Vitest 4** + **React Testing Library** — `vitest.config.ts` (`unit` jsdom project + `storybook` browser project via `@storybook/nextjs-vite`); `vitest.setup.ts` loads `@testing-library/jest-dom`
 - **Storybook 10** (`@storybook/nextjs-vite`) with **addon-a11y** (axe-core) and **addon-vitest** for story tests
-- **Playwright** for e2e (`e2e/`, `playwright.config.ts`)
-- **Chromatic** for visual regression baselines
+- **Playwright** for e2e (`e2e/`, `playwright.config.ts`) and visual regression (`visual/`, `playwright.visual.config.ts`)
 - **Husky** + **lint-staged** pre-commit hooks (lint + typecheck)
 
 ## This project

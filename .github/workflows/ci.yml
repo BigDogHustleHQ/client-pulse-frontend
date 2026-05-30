@@ -76,29 +76,43 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # Visual regression baseline. The publish step is skipped (job stays green)
-  # until the CHROMATIC_PROJECT_TOKEN repo secret is configured, so it never
-  # blocks merges on a fresh repo. Once the token is set it captures baselines.
-  chromatic:
-    name: chromatic
+  # Job 4: visual — Playwright visual regression of Storybook stories.
+  # Runs in the pinned Playwright image so the browser matches the baselines.
+  # First run (no committed baselines) generates them, uploads them as the
+  # "visual-snapshots" artifact, and passes. Commit those PNGs (from the
+  # artifact) to turn this into a blocking visual-diff gate.
+  visual:
+    name: visual
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
     env:
-      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+      HUSKY: '0' # don't install git hooks inside the container
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
       - run: npm ci
-      - name: Publish to Chromatic
-        if: ${{ env.CHROMATIC_PROJECT_TOKEN != '' }}
-        uses: chromaui/action@latest
+      - run: npm run build-storybook
+      - name: Check for committed baselines
+        id: baselines
+        run: |
+          if ls visual/*-snapshots/*.png >/dev/null 2>&1; then
+            echo "exist=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exist=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Visual regression (gate)
+        if: steps.baselines.outputs.exist == 'true'
+        run: npm run test:visual
+      - name: Generate baselines (first run)
+        if: steps.baselines.outputs.exist == 'false'
+        run: |
+          npm run test:visual:update
+          echo "::notice::No committed visual baselines found — generated them. Download the 'visual-snapshots' artifact and commit visual/**/*-snapshots/ to enable the gate."
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
-          projectToken: ${{ env.CHROMATIC_PROJECT_TOKEN }}
-          exitZeroOnChanges: true
-      - name: Chromatic not configured
-        if: ${{ env.CHROMATIC_PROJECT_TOKEN == '' }}
-        run: echo "CHROMATIC_PROJECT_TOKEN not set — skipping visual baseline. Add the repo secret to enable."
+          name: visual-snapshots
+          path: |
+            visual/**/*-snapshots/**
+            playwright-report/
+          retention-days: 7
