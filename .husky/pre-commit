@@ -1,0 +1,3 @@
+# Pre-commit gate (SID-62): lint + typecheck before every commit.
+npx lint-staged
+npm run typecheck

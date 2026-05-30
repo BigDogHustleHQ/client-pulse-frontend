@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import SSOCallbackPage from './page';
 
-jest.mock('@clerk/nextjs', () => ({
+vi.mock('@clerk/nextjs', () => ({
   AuthenticateWithRedirectCallback: () => <div>Authenticating...</div>,
 }));
 
