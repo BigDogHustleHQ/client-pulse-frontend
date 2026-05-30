@@ -1,5 +1,8 @@
 name: CI
 
+# Orchestrator: fans out to one reusable workflow per test layer. Each layer
+# lives in its own file (unit.yml, storybook-test.yml, e2e.yml, visual.yml) and
+# runs as an independent job here.
 on:
   pull_request:
   push:
@@ -13,106 +16,11 @@ permissions:
   contents: read
 
 jobs:
-  # Job 1: unit — lint, typecheck, format, and Vitest unit tests with the
-  # coverage gate (80% lines on components/, 90% on store/).
   unit:
-    name: unit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run format:check
-      - run: npm run test:coverage
-
-  # Job 2: storybook-test — runs every story's play function plus axe-core
-  # accessibility checks in a real browser via the Storybook Vitest addon.
+    uses: ./.github/workflows/unit.yml
   storybook-test:
-    name: storybook-test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium chromium-headless-shell
-      - run: npm run test:storybook
-
-  # Job 3: e2e — Playwright smoke tests against the production build.
+    uses: ./.github/workflows/storybook-test.yml
   e2e:
-    name: e2e
-    runs-on: ubuntu-latest
-    env:
-      # Dummy Clerk keys so the app boots without real secrets (see
-      # playwright.config.ts). Safe to expose — they reference no real tenant.
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk
-      CLERK_SECRET_KEY: sk_test_ZHVtbXlfc2VjcmV0X2tleV9mb3JfY2lfYnVpbGRzXw
-      # Skip Clerk's dev-browser handshake (no live backend in CI). Inlined at
-      # build time, so it must be set for both `build` and `start` below.
-      NEXT_PUBLIC_E2E_BYPASS_CLERK: 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium chromium-headless-shell
-      - run: npm run build
-      - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
-
-  # Job 4: visual — Playwright visual regression of Storybook stories.
-  # Runs in the pinned Playwright image so the browser matches the baselines.
-  # First run (no committed baselines) generates them, uploads them as the
-  # "visual-snapshots" artifact, and passes. Commit those PNGs (from the
-  # artifact) to turn this into a blocking visual-diff gate.
+    uses: ./.github/workflows/e2e.yml
   visual:
-    name: visual
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.60.0-noble
-    env:
-      HUSKY: '0' # don't install git hooks inside the container
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm run build-storybook
-      - name: Check for committed baselines
-        id: baselines
-        run: |
-          if ls visual/*-snapshots/*.png >/dev/null 2>&1; then
-            echo "exist=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exist=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Visual regression (gate)
-        if: steps.baselines.outputs.exist == 'true'
-        run: npm run test:visual
-      - name: Generate baselines (first run)
-        if: steps.baselines.outputs.exist == 'false'
-        run: |
-          npm run test:visual:update
-          echo "::notice::No committed visual baselines found — generated them. Download the 'visual-snapshots' artifact and commit visual/**/*-snapshots/ to enable the gate."
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: visual-snapshots
-          path: |
-            visual/**/*-snapshots/**
-            playwright-report/
-          retention-days: 7
+    uses: ./.github/workflows/visual.yml
