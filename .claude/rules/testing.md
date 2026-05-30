@@ -1,3 +1,13 @@
+---
+paths:
+  - '**/*.test.{ts,tsx}'
+  - '**/*.stories.{ts,tsx}'
+  - 'e2e/**'
+  - 'visual/**'
+  - '**/vitest.config.ts'
+  - '**/playwright*.config.ts'
+---
+
 # Testing
 
 Four layers run in CI: `unit`, `storybook-test`, `e2e`, `visual`. Tests are
