@@ -6,8 +6,9 @@ Guidance for Claude Code working in this repo.
 (restaurants, retail, service providers). Deployed to Vercel; the Railway
 backend (WebSocket service, Workflow Engine, Integration Hub) is a separate repo.
 
-Topic rules live in `.claude/rules/` and load automatically (`nextjs.md` and
-`architecture.md` always-on; `testing.md` when touching test files). See also
-`docs/testing.md` and `docs/visual-regression.md`.
+Topic rules live in `.claude/rules/` and load automatically — `nextjs.md` and
+`architecture.md` always-on; the `testing/` rules (unit, storybook, e2e, visual)
+scope to their own file types. See also `docs/testing.md` and
+`docs/visual-regression.md`.
 
 @AGENTS.md
