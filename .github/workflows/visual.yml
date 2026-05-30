@@ -1,0 +1,48 @@
+name: visual
+
+# Playwright visual regression of Storybook stories, in the pinned Playwright
+# image so the browser matches the baselines. First run (no committed baselines)
+# generates them, uploads the "visual-snapshots" artifact, and passes. Commit
+# those PNGs to turn this into a blocking visual-diff gate. Reusable — called by ci.yml.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    name: visual
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+    env:
+      HUSKY: '0' # don't install git hooks inside the container
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build-storybook
+      - name: Check for committed baselines
+        id: baselines
+        run: |
+          if ls visual/*-snapshots/*.png >/dev/null 2>&1; then
+            echo "exist=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exist=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Visual regression (gate)
+        if: steps.baselines.outputs.exist == 'true'
+        run: npm run test:visual
+      - name: Generate baselines (first run)
+        if: steps.baselines.outputs.exist == 'false'
+        run: |
+          npm run test:visual:update
+          echo "::notice::No committed visual baselines found — generated them. Download the 'visual-snapshots' artifact and commit visual/**/*-snapshots/ to enable the gate."
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: visual-snapshots
+          path: |
+            visual/**/*-snapshots/**
+            playwright-report/
+          retention-days: 7

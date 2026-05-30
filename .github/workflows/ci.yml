@@ -1,0 +1,26 @@
+name: CI
+
+# Orchestrator: fans out to one reusable workflow per test layer. Each layer
+# lives in its own file (unit.yml, storybook-test.yml, e2e.yml, visual.yml) and
+# runs as an independent job here.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    uses: ./.github/workflows/unit.yml
+  storybook-test:
+    uses: ./.github/workflows/storybook-test.yml
+  e2e:
+    uses: ./.github/workflows/e2e.yml
+  visual:
+    uses: ./.github/workflows/visual.yml

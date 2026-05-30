@@ -24,10 +24,15 @@ export default function LoginForm() {
     setIsSubmitting(true);
     setError('');
 
-    const { error: createError } = await signIn.create({ identifier: email, password });
+    const { error: createError } = await signIn.create({
+      identifier: email,
+      password,
+    });
 
     if (createError) {
-      setError(createError.message ?? 'Something went wrong. Please try again.');
+      setError(
+        createError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
@@ -59,12 +64,16 @@ export default function LoginForm() {
     <div className="auth">
       <div className="auth__header">
         <h1 className="auth__title">Welcome back</h1>
-        <p className="auth__subtitle">Please enter your details to access your dashboard.</p>
+        <p className="auth__subtitle">
+          Please enter your details to access your dashboard.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="auth__form" noValidate>
         <div className="auth__field">
-          <label htmlFor="email" className="auth__label">Business Email</label>
+          <label htmlFor="email" className="auth__label">
+            Business Email
+          </label>
           <div className="auth__input-wrapper">
             <input
               id="email"
@@ -82,7 +91,9 @@ export default function LoginForm() {
         </div>
 
         <div className="auth__field">
-          <label htmlFor="password" className="auth__label">Password</label>
+          <label htmlFor="password" className="auth__label">
+            Password
+          </label>
           <div className="auth__input-wrapper">
             <input
               id="password"
@@ -121,14 +132,22 @@ export default function LoginForm() {
             <span className="auth__toggle-track" aria-hidden="true" />
             <span className="auth__toggle-label">Remember me</span>
           </label>
-          <Link href="/login/forgot-password" className="auth__link">Forgot password?</Link>
+          <Link href="/login/forgot-password" className="auth__link">
+            Forgot password?
+          </Link>
         </div>
 
         {error && (
-          <p role="alert" className="auth__error">{error}</p>
+          <p role="alert" className="auth__error">
+            {error}
+          </p>
         )}
 
-        <button type="submit" className="auth__button auth__button--primary" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="auth__button auth__button--primary"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? 'Signing in…' : 'Sign in to platform'}
         </button>
       </form>
@@ -149,7 +168,9 @@ export default function LoginForm() {
 
       <p className="auth__footer">
         Don&apos;t have an account?{' '}
-        <a href="mailto:sales@clientpulse.com" className="auth__link">Contact sales</a>
+        <a href="mailto:sales@clientpulse.com" className="auth__link">
+          Contact sales
+        </a>
       </p>
     </div>
   );
