@@ -26,12 +26,15 @@ npm run chromatic        # publish Storybook to Chromatic (needs project token)
 
 ### Testing layout
 
-- **Unit (Vitest + React Testing Library):** co-located `*.test.{ts,tsx}` next to source. Run one file: `npm test -- src/app/page.test.tsx`. Config is `vitest.config.ts`, which defines two projects — `unit` (jsdom) and `storybook` (browser). `npm test` targets `--project=unit`.
-- **Coverage gate:** 80% lines on `src/components/**`, 90% on `src/store/**` (enforced in `vitest.config.ts`).
-- **Storybook (`*.stories.tsx`, co-located):** the `@storybook/addon-vitest` project runs each story's play function and axe-core accessibility checks in headless Chromium. `a11y.test` is set to `error`, so any violation fails CI.
-- **E2E (Playwright):** specs live in `e2e/`. `playwright.config.ts` builds and serves the app with dummy Clerk keys — no real secrets needed.
-- **Pre-commit:** Husky runs `lint-staged` (eslint --fix + prettier) and `npm run typecheck`.
-- **CI:** `.github/workflows/ci.yml` runs `unit`, `storybook-test`, and `e2e` on every PR, plus a `chromatic` visual-baseline job (needs the `CHROMATIC_PROJECT_TOKEN` repo secret).
+Four layers (`unit`, `storybook-test`, `e2e`, `visual`), all run in CI
+(`.github/workflows/ci.yml`). Full guide: [`docs/testing.md`](docs/testing.md).
+
+- **Unit (Vitest + RTL):** co-located `*.test.{ts,tsx}`; `vitest.config.ts` has `unit` (jsdom) and `storybook` (browser) projects. `npm test` runs `--project=unit`.
+- **Coverage gate:** 80% lines on `src/components/**`, 90% on `src/store/**`.
+- **Storybook:** co-located `*.stories.tsx`; `@storybook/addon-vitest` runs each play fn + axe in headless Chromium, `a11y.test: 'error'`.
+- **E2E (Playwright):** `e2e/`; `playwright.config.ts` serves the prod build with dummy Clerk keys.
+- **Visual (Playwright):** `visual/` screenshots stories vs committed baselines (`playwright.visual.config.ts`); regenerate in the pinned Playwright Docker image. Chromatic deferred — see [`docs/visual-regression.md`](docs/visual-regression.md).
+- **Pre-commit:** Husky runs `lint-staged` + `typecheck`.
 
 ## This is Next.js 16 — read before writing code
 

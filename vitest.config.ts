@@ -4,52 +4,34 @@ import { storybookNextJsPlugin } from '@storybook/nextjs-vite/vite-plugin';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 
-const srcDir = fileURLToPath(new URL('./src', import.meta.url));
+const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) };
 const dotStorybook = fileURLToPath(new URL('./.storybook', import.meta.url));
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@': srcDir,
-    },
-  },
+  resolve: { alias },
   test: {
     projects: [
-      // Unit tests (jsdom) — migrated from Jest + React Testing Library.
+      // Unit tests (jsdom). `inline` forces these through Vite so the Next
+      // react alias resolves to a file (externalized ESM hits a dir import).
       {
         plugins: [storybookNextJsPlugin()],
-        resolve: {
-          alias: {
-            '@': srcDir,
-          },
-        },
+        resolve: { alias },
         test: {
           name: 'unit',
           environment: 'jsdom',
           globals: true,
           setupFiles: ['./vitest.setup.ts'],
           include: ['src/**/*.test.{ts,tsx}'],
-          // Force these through Vite's transform so the Next react alias
-          // resolves to a file (externalized ESM hits a directory import).
-          server: {
-            deps: {
-              inline: ['zustand', '@tanstack/react-query'],
-            },
-          },
+          server: { deps: { inline: ['zustand', '@tanstack/react-query'] } },
         },
       },
-      // Storybook tests (real browser via Playwright) — runs every story's
-      // play function and axe-core accessibility checks (see .storybook/vitest.setup.ts).
+      // Storybook tests in a real browser: each story's play fn + axe a11y.
       {
         plugins: [
           storybookNextJsPlugin(),
           storybookTest({ configDir: dotStorybook }),
         ],
-        resolve: {
-          alias: {
-            '@': srcDir,
-          },
-        },
+        resolve: { alias },
         test: {
           name: 'storybook',
           setupFiles: ['./.storybook/vitest.setup.ts'],
@@ -62,6 +44,7 @@ export default defineConfig({
         },
       },
     ],
+    // Coverage gate (SID-62): 80% lines on components/, 90% on store/.
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
@@ -72,14 +55,9 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/proxy.ts',
       ],
-      // Coverage gate (SID-62): 80% lines on components/, 90% on state/ (store/).
       thresholds: {
-        'src/components/**': {
-          lines: 80,
-        },
-        'src/store/**': {
-          lines: 90,
-        },
+        'src/components/**': { lines: 80 },
+        'src/store/**': { lines: 90 },
       },
     },
   },
