@@ -5,6 +5,19 @@ const isPublicRoute = createRouteMatcher([
   '/login(.*)',
   '/registration(.*)',
   '/sso-callback(.*)',
+  // ⚠️ MOCK PHASE: app pages and their mock endpoints are publicly viewable so
+  // the UI can be demoed without a Clerk session. Remove these once pages read
+  // real, auth-scoped data.
+  '/today(.*)',
+  '/inbox(.*)',
+  '/social(.*)',
+  '/reservations(.*)',
+  '/workflows(.*)',
+  '/vendors(.*)',
+  '/website(.*)',
+  '/insights(.*)',
+  '/settings(.*)',
+  '/api/mock(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

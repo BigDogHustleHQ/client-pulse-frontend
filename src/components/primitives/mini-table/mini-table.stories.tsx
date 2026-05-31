@@ -27,6 +27,7 @@ const meta = {
   title: 'Primitives/MiniTable',
   component: MiniTable,
   tags: ['autodocs'],
+  args: { columns, data, rowKey: (r: Row) => r.name },
 } satisfies Meta<typeof MiniTable<Row>>;
 
 export default meta;

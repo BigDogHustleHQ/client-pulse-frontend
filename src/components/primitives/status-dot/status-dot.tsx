@@ -54,10 +54,7 @@ function StatusDot({
     <span
       data-slot="status-dot"
       role="status"
-      className={cn(
-        'inline-flex items-center gap-1.5 text-sm',
-        props.className,
-      )}
+      className={cn('inline-flex items-center gap-1.5 text-sm', className)}
       {...props}
     >
       {dot}
