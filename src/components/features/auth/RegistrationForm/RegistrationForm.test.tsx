@@ -176,6 +176,24 @@ describe('RegistrationForm', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument());
   });
 
+  it('uses fallbacks when signUp fields are null', async () => {
+    mockSignUp.createdUserId = null as unknown as string;
+    mockSignUp.emailAddress = null as unknown as string;
+
+    render(<RegistrationForm />);
+    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'fallback@co.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+
+    await waitFor(() => {
+      expect(mockSetUser).toHaveBeenCalledWith({
+        clerkId: '',
+        email: 'fallback@co.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+      });
+    });
+  });
+
   it('should call google sign up on button click', async () => {
     render(<RegistrationForm />);
     fireEvent.click(screen.getByRole('button', { name: /sign up with google/i }));

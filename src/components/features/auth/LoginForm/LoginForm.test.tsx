@@ -156,6 +156,26 @@ describe('LoginForm', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sign in to platform' })).toBeInTheDocument());
   });
 
+  it('uses fallbacks when signIn fields are null', async () => {
+    mockSignIn.createdSessionId = null as unknown as string;
+    mockSignIn.identifier = null as unknown as string;
+    mockSignIn.userData = { firstName: null as unknown as string, lastName: null as unknown as string };
+
+    render(<LoginForm />);
+    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'fallback@co.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pw' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+
+    await waitFor(() => {
+      expect(mockSetUser).toHaveBeenCalledWith({
+        clerkId: '',
+        email: 'fallback@co.com',
+        firstName: null,
+        lastName: null,
+      });
+    });
+  });
+
   it('should call Google sign in on button click', async () => {
     render(<LoginForm />);
     fireEvent.click(screen.getByRole('button', { name: /sign in with google/i }));
