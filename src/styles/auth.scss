@@ -1,5 +1,6 @@
 @use 'sass:color';
 
+// ─── Design tokens ───────────────────────────────────────────────────────────
 $cp-bg: #fdf5ef;
 $cp-text: #2c2820;
 $cp-text-muted: #7a6f65;
@@ -16,8 +17,8 @@ $cp-error-border: #fecaca;
 .auth {
   background-color: #ffffff;
   width: 100%;
-  max-width: 28rem;
-  padding: 2.5rem;
+  max-width: 37.5rem;
+  padding: 3.5rem;
   border-radius: 1rem;
   box-shadow:
     0 4px 24px rgba(44, 40, 32, 0.08),
@@ -184,7 +185,7 @@ $cp-error-border: #fecaca;
 
   &__button {
     width: 100%;
-    border-radius: 0.5rem;
+    border-radius: 1.125rem;
     border: none;
     font-size: 0.9375rem;
     cursor: pointer;
@@ -249,5 +250,124 @@ $cp-error-border: #fecaca;
     font-size: 0.875rem;
     color: $cp-text-muted;
     margin-top: 1.5rem;
+
+    .auth__link {
+      margin-left: 0.25rem;
+    }
+  }
+}
+
+// ─── Login page split layout ──────────────────────────────────────────────────
+//
+// Shared horizontal padding keeps the panel content and footer text edges aligned.
+$login-px: 4rem;
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: $cp-bg;
+}
+
+// Grid: left cream panel | right white panel — fills all space above footer
+.login-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 50fr 50fr;
+}
+
+// Left panel — vertically centers the hero group
+.login-panel {
+  background-color: $cp-bg;
+  padding: 3.5rem $login-px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+// Brand sits directly above the heading, inside the hero group
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: $cp-text;
+  margin-bottom: 1.5rem;
+}
+
+.login-hero {
+  display: flex;
+  flex-direction: column;
+
+  &__heading {
+    font-size: 2.75rem;
+    font-weight: 800;
+    color: $cp-text;
+    line-height: 1.15;
+    margin-bottom: 1.25rem;
+
+    em {
+      font-style: italic;
+      color: $cp-primary;
+    }
+  }
+
+  &__body {
+    font-size: 0.9375rem;
+    color: $cp-text-muted;
+    line-height: 1.7;
+    max-width: 22rem;
+  }
+}
+
+// Right panel — cream background so the white .auth card floats on it
+.login-form-panel {
+  background-color: $cp-bg;
+  padding: 3.5rem $login-px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Full-width footer — horizontal padding matches $login-px so text edges align
+.login-footer {
+  border-top: 1px solid $cp-border;
+  padding: 1.25rem $login-px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: $cp-text-muted;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  &__brand {
+    font-weight: 600;
+    color: $cp-text;
+  }
+
+  &__sep {
+    color: $cp-border;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    a {
+      color: $cp-text-muted;
+      text-decoration: none;
+      transition: color 150ms;
+
+      &:hover {
+        color: $cp-text;
+      }
+    }
   }
 }
