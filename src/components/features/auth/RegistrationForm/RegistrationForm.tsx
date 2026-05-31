@@ -1,10 +1,15 @@
 'use client';
 
 import { useSignUp } from '@clerk/nextjs';
+import { AtSign, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/store';
 
 export default function RegistrationForm() {
@@ -33,7 +38,9 @@ export default function RegistrationForm() {
     });
 
     if (createError) {
-      setError(createError.message ?? 'Something went wrong. Please try again.');
+      setError(
+        createError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
@@ -63,111 +70,128 @@ export default function RegistrationForm() {
   };
 
   return (
-    <div className="auth">
-      <div className="auth__header">
-        <h1 className="auth__title">Create your account</h1>
-        <p className="auth__subtitle">Get started with ClientPulse today.</p>
+    <Card className="w-full max-w-md gap-0 p-10 shadow-xl">
+      <div className="mb-8 space-y-1.5">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Create your account
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Get started with ClientPulse today.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="auth__form" noValidate>
-        <div className="auth__field">
-          <label htmlFor="firstName" className="auth__label">First Name</label>
-          <input
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input
             id="firstName"
             type="text"
             placeholder="Jane"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="auth__input"
+            className="h-11 bg-secondary"
             required
           />
         </div>
 
-        <div className="auth__field">
-          <label htmlFor="lastName" className="auth__label">Last Name</label>
-          <input
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input
             id="lastName"
             type="text"
             placeholder="Smith"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="auth__input"
+            className="h-11 bg-secondary"
           />
         </div>
 
-        <div className="auth__field">
-          <label htmlFor="email" className="auth__label">Business Email</label>
-          <div className="auth__input-wrapper">
-            <input
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="email">Business Email</Label>
+          <div className="relative">
+            <Input
               id="email"
               type="email"
               placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="auth__input"
+              className="h-11 bg-secondary pr-10"
               required
             />
-            <span className="auth__input-icon">
-              <Image src="/icons/at.svg" alt="Email" width={16} height={16} />
-            </span>
+            <AtSign className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
 
-        <div className="auth__field">
-          <label htmlFor="password" className="auth__label">Password</label>
-          <div className="auth__input-wrapper">
-            <input
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="password">Password</Label>
+          <div className="relative">
+            <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="auth__input"
+              className="h-11 bg-secondary pr-10"
               required
             />
             <button
               type="button"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               onClick={() => setShowPassword((prev) => !prev)}
-              className="auth__input-icon auth__input-icon--button"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
             >
-              <Image
-                src={showPassword ? '/icons/eye-off.svg' : '/icons/eye.svg'}
-                alt={showPassword ? 'Hide password' : 'Show password'}
-                width={16}
-                height={16}
-              />
+              {showPassword ? (
+                <EyeOff className="size-4" />
+              ) : (
+                <Eye className="size-4" />
+              )}
             </button>
           </div>
         </div>
 
         {error && (
-          <p role="alert" className="auth__error">{error}</p>
+          <p
+            role="alert"
+            className="rounded-md border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive"
+          >
+            {error}
+          </p>
         )}
 
-        <button type="submit" className="auth__button auth__button--primary" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="mt-1 h-11 w-full"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? 'Creating account…' : 'Create account'}
-        </button>
+        </Button>
       </form>
 
-      <div className="auth__divider">
-        <span>Or continue with</span>
+      <div className="my-6 flex items-center gap-4">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-xs whitespace-nowrap text-muted-foreground">
+          Or continue with
+        </span>
+        <span className="h-px flex-1 bg-border" />
       </div>
 
-      <button
+      <Button
         type="button"
-        className="auth__button auth__button--social"
+        variant="secondary"
+        className="h-11 w-full gap-2.5"
         onClick={handleGoogleSignUp}
         disabled={fetchStatus === 'fetching'}
       >
         <Image src="/icons/google.svg" alt="Google" width={18} height={18} />
         Sign up with Google
-      </button>
+      </Button>
 
-      <p className="auth__footer">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link href="/login" className="auth__link">Log in</Link>
+        <Link href="/login" className="font-medium text-brand hover:underline">
+          Log in
+        </Link>
       </p>
-    </div>
+    </Card>
   );
 }

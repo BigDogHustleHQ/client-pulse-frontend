@@ -1,0 +1,16 @@
+# Build / tooling output — not source, don't format-check.
+node_modules
+.next
+out
+build
+coverage
+storybook-static
+playwright-report
+test-results
+*.tsbuildinfo
+package-lock.json
+
+# Local agent scratch dirs (untracked).
+.remember
+.swc
+certificates
