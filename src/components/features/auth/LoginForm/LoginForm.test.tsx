@@ -6,6 +6,13 @@ const mockFinalize = jest.fn();
 const mockSSO = jest.fn();
 const mockPush = jest.fn();
 const mockSetUser = jest.fn();
+const mockPersistSession = jest.fn();
+const mockMarkTemporarySession = jest.fn();
+
+jest.mock('@/lib/clerk/session', () => ({
+  persistSession: (...args: unknown[]) => mockPersistSession(...args),
+  markTemporarySession: (...args: unknown[]) => mockMarkTemporarySession(...args),
+}));
 
 const mockSignIn = {
   status: 'complete' as string,
@@ -173,6 +180,27 @@ describe('LoginForm', () => {
         firstName: null,
         lastName: null,
       });
+    });
+  });
+
+  it('calls persistSession when Remember Me is checked', async () => {
+    render(<LoginForm />);
+    fireEvent.click(screen.getByLabelText('Remember me'));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+
+    await waitFor(() => {
+      expect(mockPersistSession).toHaveBeenCalled();
+      expect(mockMarkTemporarySession).not.toHaveBeenCalled();
+    });
+  });
+
+  it('calls markTemporarySession when Remember Me is unchecked', async () => {
+    render(<LoginForm />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+
+    await waitFor(() => {
+      expect(mockMarkTemporarySession).toHaveBeenCalled();
+      expect(mockPersistSession).not.toHaveBeenCalled();
     });
   });
 
