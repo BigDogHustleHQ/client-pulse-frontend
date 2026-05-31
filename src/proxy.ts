@@ -5,19 +5,6 @@ const isPublicRoute = createRouteMatcher([
   '/login(.*)',
   '/registration(.*)',
   '/sso-callback(.*)',
-  // ⚠️ MOCK PHASE: app pages and their mock endpoints are publicly viewable so
-  // the UI can be demoed without a Clerk session. Remove these once pages read
-  // real, auth-scoped data.
-  '/today(.*)',
-  '/inbox(.*)',
-  '/social(.*)',
-  '/reservations(.*)',
-  '/workflows(.*)',
-  '/vendors(.*)',
-  '/website(.*)',
-  '/insights(.*)',
-  '/settings(.*)',
-  '/api/mock(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
@@ -28,7 +15,11 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    // ⚠️ MOCK PHASE: the (app) pages and /api/mock are EXCLUDED from Clerk
+    // middleware entirely, so they render without a Clerk dev-browser handshake
+    // (which would otherwise redirect to the publishable key's frontend-API
+    // domain). Remove these exclusions when wiring real, auth-scoped data.
+    '/((?!_next|today|inbox|social|reservations|workflows|vendors|website|insights|settings|api/mock|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api(?!/mock)|trpc)(.*)',
   ],
 };
