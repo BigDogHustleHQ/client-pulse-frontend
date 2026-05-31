@@ -34,14 +34,16 @@ export default function LoginForm() {
 
     if (signIn.status === 'complete') {
       await signIn.finalize();
-
       setUser({
         clerkId: signIn.createdSessionId ?? '',
         email: signIn.identifier ?? email,
         firstName: signIn.userData.firstName ?? null,
         lastName: signIn.userData.lastName ?? null,
       });
+      setIsSubmitting(false);
+
       router.push('/dashboard');
+      return;
     }
 
     setIsSubmitting(false);

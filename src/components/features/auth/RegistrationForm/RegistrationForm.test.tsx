@@ -9,6 +9,7 @@ const mockSetUser = jest.fn();
 
 const mockSignUp = {
   status: 'complete' as string,
+  createdSessionId: 'sess_123',
   createdUserId: 'user_123',
   emailAddress: 'jane@company.com',
   firstName: 'Jane',
@@ -39,6 +40,7 @@ describe('RegistrationForm', () => {
     jest.clearAllMocks();
 
     mockSignUp.status = 'complete';
+    mockSignUp.createdSessionId = 'sess_123';
     mockSignUp.createdUserId = 'user_123';
     mockSignUp.emailAddress = 'jane@company.com';
     mockSignUp.firstName = 'Jane';
@@ -174,6 +176,24 @@ describe('RegistrationForm', () => {
 
     expect(await screen.findByRole('button', { name: 'Creating account…' })).toBeDisabled();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument());
+  });
+
+  it('uses fallbacks when signUp fields are null', async () => {
+    mockSignUp.createdUserId = null as unknown as string;
+    mockSignUp.emailAddress = null as unknown as string;
+
+    render(<RegistrationForm />);
+    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'fallback@co.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+
+    await waitFor(() => {
+      expect(mockSetUser).toHaveBeenCalledWith({
+        clerkId: '',
+        email: 'fallback@co.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+      });
+    });
   });
 
   it('should call google sign up on button click', async () => {
