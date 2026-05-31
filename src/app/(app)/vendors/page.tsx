@@ -1,10 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import type { DragEndEvent } from '@dnd-kit/core';
+import type {
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+} from '@dnd-kit/core';
+import {
+  DragOverlay,
+  PointerSensor,
+  KeyboardSensor,
+  closestCorners,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
+  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { Sparkles, Star } from 'lucide-react';
@@ -115,22 +128,87 @@ function VendorCard({
   );
 }
 
+/** A lightweight card snapshot used in the DragOverlay so the floating
+ *  preview matches the actual card without inheriting sortable transforms. */
+function VendorCardOverlay({ vendor }: { vendor: Vendor }) {
+  return (
+    <Card size="sm" className="w-full rotate-2 shadow-xl ring-1 ring-brand/30">
+      <CardHeader className="grid-cols-[auto_1fr_auto] items-center">
+        <span
+          aria-hidden="true"
+          className="-ml-1 inline-flex size-6 cursor-grabbing items-center justify-center rounded-md text-muted-foreground text-base leading-none tracking-tighter"
+        >
+          ⋮⋮
+        </span>
+        <CardTitle className="truncate">{vendor.name}</CardTitle>
+        <Pill tone={STATUS_TONE[vendor.status]}>{vendor.status}</Pill>
+      </CardHeader>
+      {(vendor.rating != null || vendor.price || vendor.poc) && (
+        <CardContent className="flex flex-col gap-2 pl-9">
+          <div className="flex items-center gap-3">
+            {vendor.rating != null && <Rating value={vendor.rating} />}
+            {vendor.price && (
+              <span className="text-xs font-medium text-foreground">
+                {vendor.price}
+              </span>
+            )}
+          </div>
+          {vendor.poc && (
+            <p className="text-xs text-muted-foreground">POC: {vendor.poc}</p>
+          )}
+        </CardContent>
+      )}
+    </Card>
+  );
+}
+
+const LANE_IDS: VendorLaneId[] = ['leads', 'contacted', 'quoted', 'signed'];
+const isLaneId = (id: string): id is VendorLaneId =>
+  (LANE_IDS as string[]).includes(id);
+
 function KanbanBoard({
   lanes,
   vendors,
-  onMove,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
   onDraft,
+  activeDragId,
 }: {
   lanes: VendorLane[];
   vendors: Vendor[];
-  onMove: (event: DragEndEvent) => void;
+  onDragStart: (event: DragStartEvent) => void;
+  onDragOver: (event: DragOverEvent) => void;
+  onDragEnd: (event: DragEndEvent) => void;
   onDraft: (vendor: Vendor) => void;
+  activeDragId: string | null;
 }) {
   const byLane = (laneId: VendorLaneId) =>
     vendors.filter((v) => v.lane === laneId);
 
+  const activeVendor = activeDragId
+    ? vendors.find((v) => v.id === activeDragId)
+    : null;
+
+  // Custom sensors: PointerSensor with an activation distance so clicks on
+  // buttons inside the card (e.g. "Draft email") do not start a drag.
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
   return (
-    <DragDropProvider onDragEnd={onMove}>
+    <DragDropProvider
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+    >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {lanes.map((lane) => {
           const laneVendors = byLane(lane.id);
@@ -164,6 +242,19 @@ function KanbanBoard({
           );
         })}
       </div>
+
+      {/* Floating card preview that follows the cursor while dragging.
+          Uses a subtle rotate + shadow to signal it is "lifted". */}
+      <DragOverlay
+        dropAnimation={{
+          duration: 200,
+          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+          sideEffects: undefined,
+        }}
+        className="motion-reduce:!transition-none"
+      >
+        {activeVendor ? <VendorCardOverlay vendor={activeVendor} /> : null}
+      </DragOverlay>
     </DragDropProvider>
   );
 }
@@ -275,13 +366,12 @@ function AddVendorDialog({
   );
 }
 
-const LANE_IDS: VendorLaneId[] = ['leads', 'contacted', 'quoted', 'signed'];
-const isLaneId = (id: string): id is VendorLaneId =>
-  (LANE_IDS as string[]).includes(id);
-
 export default function VendorsPage() {
   const { data, isLoading, isError } = useVendors();
   const [vendors, setVendors] = React.useState<Vendor[]>([]);
+  // Track the id of the card currently being dragged so we can render the
+  // DragOverlay preview and dim the ghost in place.
+  const [draggingId, setDraggingId] = React.useState<string | null>(null);
   const [activeVendorId, setActiveVendorId] = React.useState<string | null>(
     null,
   );
@@ -320,7 +410,14 @@ export default function VendorsPage() {
     setResolution(null);
   }
 
-  function handleMove(event: DragEndEvent) {
+  // Capture the dragging id so the DragOverlay can render the right card.
+  function handleDragStart(event: DragStartEvent) {
+    setDraggingId(String(event.active.id));
+  }
+
+  // Live optimistic lane re-tag as the card moves over a new lane or card.
+  // This makes cards appear to "move in" before the user releases.
+  function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over) return;
     const activeId = String(active.id);
@@ -335,12 +432,39 @@ export default function VendorsPage() {
         ? overId
         : (prev.find((v) => v.id === overId)?.lane ?? moving.lane);
 
-      // Re-tag the lane, then reorder within the target lane relative to the
-      // card it was dropped on (if any).
+      // Only re-tag if the lane actually changes to avoid thrashing.
+      if (moving.lane === targetLane) return prev;
+
+      return prev.map((v) =>
+        v.id === activeId ? { ...v, lane: targetLane } : v,
+      );
+    });
+  }
+
+  // On drop: finalise position within the target lane (reorder relative to
+  // the card it was dropped on top of, if any).
+  function handleDragEnd(event: DragEndEvent) {
+    setDraggingId(null);
+    const { active, over } = event;
+    if (!over) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeId === overId) return;
+
+    setVendors((prev) => {
+      const moving = prev.find((v) => v.id === activeId);
+      if (!moving) return prev;
+
+      // Re-tag lane (handles drop onto empty lane dropzone).
+      const targetLane: VendorLaneId = isLaneId(overId)
+        ? overId
+        : (prev.find((v) => v.id === overId)?.lane ?? moving.lane);
+
       const next = prev.map((v) =>
         v.id === activeId ? { ...v, lane: targetLane } : v,
       );
 
+      // Reorder within the lane when dropped on top of another card.
       if (!isLaneId(overId)) {
         const from = next.findIndex((v) => v.id === activeId);
         const to = next.findIndex((v) => v.id === overId);
@@ -392,8 +516,11 @@ export default function VendorsPage() {
       <KanbanBoard
         lanes={lanes}
         vendors={vendors}
-        onMove={handleMove}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
         onDraft={(v) => setActiveVendorId(v.id)}
+        activeDragId={draggingId}
       />
 
       <Panel>

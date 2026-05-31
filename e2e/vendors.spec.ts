@@ -186,4 +186,65 @@ test.describe('Vendors', () => {
     await expect(cards).toHaveCount(6);
     await expect(page.getByText('Burrata Co.', { exact: true })).toBeVisible();
   });
+
+  test('keyboard dnd: card moves to another lane and appears there', async ({
+    page,
+  }) => {
+    const lanes = page.locator('[data-slot="dropzone"]');
+    const leadsLane = lanes.filter({ hasText: 'Leads' }).first();
+    const contactedLane = lanes.filter({ hasText: 'Contacted' }).first();
+
+    // Mock seeds Leads with 2 cards, Contacted with 1.
+    await expect(leadsLane.locator('[data-slot="draggable"]')).toHaveCount(2);
+    await expect(contactedLane.locator('[data-slot="draggable"]')).toHaveCount(
+      1,
+    );
+
+    // Lift Fresh Bros (second Leads card) and move it right into Contacted.
+    const handle = page.getByRole('button', { name: 'Drag Fresh Bros' });
+    await handle.focus();
+    await page.keyboard.press('Space');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Space');
+
+    // Total card count must be unchanged (6).
+    const cards = page.locator('[data-slot="draggable"]');
+    await expect(cards).toHaveCount(6);
+    // Fresh Bros must now be visible inside the Contacted lane.
+    await expect(
+      contactedLane.getByText('Fresh Bros', { exact: true }),
+    ).toBeVisible();
+  });
+
+  test('keyboard dnd: moving the only card out of a lane leaves the lane empty but visible', async ({
+    page,
+  }) => {
+    const lanes = page.locator('[data-slot="dropzone"]');
+    const contactedLane = lanes.filter({ hasText: 'Contacted' }).first();
+
+    // Mock seeds Contacted with exactly 1 card (Valley Farm).
+    await expect(contactedLane.locator('[data-slot="draggable"]')).toHaveCount(
+      1,
+    );
+
+    // Keyboard-lift Valley Farm and move it right into the Quoted lane.
+    const handle = page.getByRole('button', { name: 'Drag Valley Farm' });
+    await handle.focus();
+    await page.keyboard.press('Space');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Space');
+
+    // Total card count must be unchanged (6).
+    const cards = page.locator('[data-slot="draggable"]');
+    await expect(cards).toHaveCount(6);
+
+    // Contacted lane is now empty — the dropzone element must still exist so
+    // future drops can target it.
+    await expect(contactedLane.locator('[data-slot="draggable"]')).toHaveCount(
+      0,
+    );
+    await expect(contactedLane).toBeVisible();
+    // The lane header label is still rendered.
+    await expect(contactedLane.getByText('Contacted')).toBeVisible();
+  });
 });

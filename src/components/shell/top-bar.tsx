@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Bell, ChevronDown, LogOut, Search, Settings } from 'lucide-react';
 import { Badge } from '@/components/primitives';
 import {
@@ -19,33 +19,64 @@ import { MobileNav } from './mobile-nav';
 
 const TENANT_NAME = "Bella's Bistro";
 
-const NOTIFICATIONS = [
+type Notification = {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+};
+
+const INITIAL_NOTIFICATIONS: Notification[] = [
   {
     id: 'review',
     title: 'New 4★ Google review',
     detail: 'Jordan left a review 12 minutes ago',
+    href: '/inbox?notification=review',
   },
   {
     id: 'reservation',
     title: 'Reservation request',
     detail: 'Party of 6 for Friday at 7:30pm',
+    href: '/reservations?notification=reservation',
   },
   {
     id: 'workflow',
     title: 'Workflow needs sign-off',
     detail: 'Slow Tuesday promo is ready to send',
+    href: '/workflows?notification=workflow',
   },
-] as const;
+];
 
 const OTHER_TENANTS = ['Harbor Coffee', 'Maple & Main'] as const;
 
 export function TopBar() {
   const pathname = usePathname();
+  const router = useRouter();
   const active = NAV_ITEMS.find(
     (i) => pathname === i.href || pathname.startsWith(`${i.href}/`),
   );
 
-  const [unread, setUnread] = useState<number>(NOTIFICATIONS.length);
+  // The notification list itself is static in the mock phase; only per-item
+  // read state changes, so this never needs a setter.
+  const [notifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  const unread = notifications.filter((n) => !readIds.has(n.id)).length;
+
+  function markRead(id: string) {
+    setReadIds((prev) => new Set([...prev, id]));
+  }
+
+  function markAllRead() {
+    setReadIds(new Set(notifications.map((n) => n.id)));
+  }
+
+  function handleNotificationClick(note: Notification) {
+    markRead(note.id);
+    setNotifOpen(false);
+    router.push(note.href);
+  }
 
   return (
     <header
@@ -73,7 +104,7 @@ export function TopBar() {
           <span className="hidden flex-1 text-left sm:inline">Search…</span>
         </button>
 
-        <DropdownMenu>
+        <DropdownMenu open={notifOpen} onOpenChange={setNotifOpen}>
           <DropdownMenuTrigger
             aria-label="Notifications"
             className="relative grid size-9 place-content-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground motion-reduce:transition-none"
@@ -95,24 +126,42 @@ export function TopBar() {
           >
             <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {NOTIFICATIONS.map((note) => (
-              <DropdownMenuItem
-                key={note.id}
-                className="flex-col items-start gap-0.5 py-2"
-              >
-                <span className="text-sm font-medium text-foreground">
-                  {note.title}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {note.detail}
-                </span>
-              </DropdownMenuItem>
-            ))}
+            {notifications.map((note) => {
+              const isUnread = !readIds.has(note.id);
+              return (
+                <DropdownMenuItem
+                  key={note.id}
+                  aria-label={note.title}
+                  onSelect={() => handleNotificationClick(note)}
+                  className="flex-col items-start gap-0.5 py-2"
+                >
+                  <span className="flex w-full items-center gap-2">
+                    {isUnread && (
+                      <span
+                        aria-hidden="true"
+                        className="size-1.5 shrink-0 rounded-full bg-brand"
+                      />
+                    )}
+                    <span
+                      className={cn(
+                        'text-sm font-medium',
+                        isUnread ? 'text-foreground' : 'text-muted-foreground',
+                      )}
+                    >
+                      {note.title}
+                    </span>
+                  </span>
+                  <span className="pl-3.5 text-xs text-muted-foreground">
+                    {note.detail}
+                  </span>
+                </DropdownMenuItem>
+              );
+            })}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-                setUnread(0);
+                markAllRead();
               }}
             >
               Mark all as read

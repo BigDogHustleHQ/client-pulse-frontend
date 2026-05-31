@@ -162,3 +162,88 @@ test.describe('Today page', () => {
     await expect(topBarHeading(page)).toHaveText('Reservations');
   });
 });
+
+test.describe('Today widget board: customize', () => {
+  test('default board renders the seeded widgets', async ({ page }) => {
+    await gotoPage(page, 'today');
+
+    const board = page.locator('[data-slot="widget-board"]');
+    await expect(board).toBeVisible();
+    // 4 KPI widgets + 2 AI tiles + goals = 7 placed widgets.
+    await expect(board.locator('[data-slot="widget"]')).toHaveCount(7);
+    await expect(page.locator('[data-slot="kpi"]')).toHaveCount(4);
+    await expect(page.locator('[data-slot="ai-reply-draft"]')).toHaveCount(2);
+  });
+
+  test('edit toggle reveals add + remove + drag controls', async ({ page }) => {
+    await gotoPage(page, 'today');
+
+    // No edit affordances until edit mode.
+    await expect(page.locator('[data-slot="add-widget"]')).toHaveCount(0);
+    await expect(page.locator('[data-slot="widget-remove"]')).toHaveCount(0);
+
+    await page.locator('[data-slot="edit-layout-toggle"]').click();
+
+    await expect(page.locator('[data-slot="add-widget"]')).toBeVisible();
+    await expect(
+      page.locator('[data-slot="widget-remove"]').first(),
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-slot="widget-drag-handle"]').first(),
+    ).toBeVisible();
+  });
+
+  test('adding a widget from the catalog appends it', async ({ page }) => {
+    await gotoPage(page, 'today');
+
+    await page.locator('[data-slot="edit-layout-toggle"]').click();
+    const before = await page.locator('[data-slot="widget"]').count();
+
+    await page.locator('[data-slot="add-widget"]').click();
+    await page
+      .locator('[data-slot="add-widget-option"][data-widget-type="note"]')
+      .click();
+
+    await expect(page.locator('[data-slot="widget"]')).toHaveCount(before + 1);
+    await expect(page.locator('[data-slot="widget-note"]')).toBeVisible();
+  });
+
+  test('removing a widget drops it, and the layout persists across reload', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'today');
+
+    await page.locator('[data-slot="edit-layout-toggle"]').click();
+    const before = await page.locator('[data-slot="widget"]').count();
+
+    // Remove the goals widget by its accessible label.
+    await page.getByRole('button', { name: "Remove Today's goals" }).click();
+    await expect(page.locator('[data-slot="widget"]')).toHaveCount(before - 1);
+
+    await page.reload();
+    await expect(page.locator('main h2').first()).toBeVisible();
+    // The removal survived the reload (localStorage persistence).
+    await expect(page.locator('[data-slot="widget"]')).toHaveCount(before - 1);
+  });
+
+  test('a widget can be reordered with the keyboard', async ({ page }) => {
+    await gotoPage(page, 'today');
+    await page.locator('[data-slot="edit-layout-toggle"]').click();
+
+    const widgets = page.locator('[data-slot="widget"]');
+    const firstId = await widgets.first().getAttribute('data-widget-id');
+
+    // Focus the first drag handle, pick up, move down, drop (dnd-kit keyboard).
+    const handle = page.locator('[data-slot="widget-drag-handle"]').first();
+    await handle.focus();
+    await page.keyboard.press('Space');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Space');
+
+    // The previously-first widget is no longer first.
+    await expect(widgets.first()).not.toHaveAttribute(
+      'data-widget-id',
+      firstId!,
+    );
+  });
+});

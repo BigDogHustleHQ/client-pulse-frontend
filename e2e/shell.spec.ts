@@ -56,6 +56,43 @@ test.describe('shell: TopBar chrome (desktop)', () => {
     await expect(bell.locator('[data-slot="badge"]')).toHaveCount(0);
   });
 
+  test('clicking a notification navigates to its route and closes the menu', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'today');
+
+    const bell = page.getByRole('button', { name: 'Notifications' });
+    await bell.click();
+
+    const menu = page.locator('[data-slot="notifications-menu"]');
+    await expect(menu).toBeVisible();
+
+    // Click the review notification — should navigate to /inbox
+    await menu.getByRole('menuitem', { name: 'New 4★ Google review' }).click();
+
+    await expect(page).toHaveURL(/\/inbox/);
+    // Menu is closed after navigation.
+    await expect(menu).toHaveCount(0);
+  });
+
+  test('clicking a notification decrements the unread badge', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'today');
+
+    const bell = page.getByRole('button', { name: 'Notifications' });
+    await expect(bell.locator('[data-slot="badge"]')).toHaveText('3');
+
+    await bell.click();
+
+    const menu = page.locator('[data-slot="notifications-menu"]');
+    // Click "Reservation request" notification
+    await menu.getByRole('menuitem', { name: 'Reservation request' }).click();
+
+    // Badge should now show 2.
+    await expect(bell.locator('[data-slot="badge"]')).toHaveText('2');
+  });
+
   test('clicking the profile button opens the profile menu with a Settings item', async ({
     page,
   }) => {
@@ -73,5 +110,38 @@ test.describe('shell: TopBar chrome (desktop)', () => {
 
     await settings.click();
     await expect(page).toHaveURL(/\/settings$/);
+  });
+});
+
+// SideNav collapse toggle contract (desktop only).
+test.describe('shell: SideNav collapse toggle', () => {
+  test('toggle collapses the sidebar to a rail and all links remain accessible', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'today');
+
+    const sidenav = page.locator('[data-slot="side-nav"]');
+    await expect(sidenav).toBeVisible();
+
+    // Sidebar starts expanded — visible label text for a nav link is present.
+    const inboxLink = sidenav.getByRole('link', { name: 'Inbox', exact: true });
+    await expect(inboxLink).toBeVisible();
+
+    // Click the collapse toggle.
+    const toggle = page.locator('[data-slot="sidenav-collapse"]');
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+
+    // After collapsing, the sidebar should be narrower.
+    const box = await sidenav.boundingBox();
+    expect(box!.width).toBeLessThanOrEqual(64);
+
+    // Links are still reachable by their accessible name (aria-label).
+    await expect(inboxLink).toBeVisible();
+
+    // Expand again.
+    await toggle.click();
+    const expandedBox = await sidenav.boundingBox();
+    expect(expandedBox!.width).toBeGreaterThan(100);
   });
 });
