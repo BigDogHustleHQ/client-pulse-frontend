@@ -2,12 +2,12 @@ import { renderHook } from '@testing-library/react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@clerk/nextjs';
 import { useCurrentUser } from './useCurrentUser';
-import { gqlFetch } from '@/lib/api/client';
+import { gqlFetch } from '@/lib/api/graphql';
 import { GET_CURRENT_USER } from '@/lib/api/queries';
 
 jest.mock('@tanstack/react-query', () => ({ useQuery: jest.fn(() => ({ data: undefined })) }));
 jest.mock('@clerk/nextjs', () => ({ useAuth: jest.fn() }));
-jest.mock('@/lib/api/client', () => ({ gqlFetch: jest.fn() }));
+jest.mock('@/lib/api/graphql', () => ({ gqlFetch: jest.fn() }));
 
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;

@@ -9,13 +9,13 @@ export const GET_CURRENT_USER = `
   }
 `;
 
-export interface CurrentUser {
+export interface User {
   id: string;
   email: string;
   firstName: string | null;
   lastName: string | null;
 }
 
-export interface GetCurrentUserResponse {
-  getCurrentUser: CurrentUser;
+export interface UserResponse {
+  getCurrentUser: User;
 }

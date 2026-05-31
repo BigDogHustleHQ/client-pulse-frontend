@@ -1,6 +1,6 @@
 import { useAuthStore } from '.';
 
-describe('store barrel', () => {
+describe('Store', () => {
   it('re-exports useAuthStore', () => {
     expect(useAuthStore).toBeDefined();
   });

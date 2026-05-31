@@ -9,6 +9,7 @@ const mockSetUser = jest.fn();
 
 const mockSignUp = {
   status: 'complete' as string,
+  createdSessionId: 'sess_123',
   createdUserId: 'user_123',
   emailAddress: 'jane@company.com',
   firstName: 'Jane',
@@ -39,6 +40,7 @@ describe('RegistrationForm', () => {
     jest.clearAllMocks();
 
     mockSignUp.status = 'complete';
+    mockSignUp.createdSessionId = 'sess_123';
     mockSignUp.createdUserId = 'user_123';
     mockSignUp.emailAddress = 'jane@company.com';
     mockSignUp.firstName = 'Jane';
