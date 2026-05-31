@@ -5,11 +5,11 @@ export default function LoginPage() {
   const year = new Date().getFullYear();
 
   return (
-    <div className="login-page">
-      <main className="login-layout" aria-label="Sign in">
-        <div className="login-panel">
+    <div className="login">
+      <main className="login__layout" aria-label="Sign in">
+        <div className="login__panel">
           <div className="login-hero">
-            <div className="login-brand">
+            <div className="login-hero__brand">
               <Image src="/icons/sparkles.svg" alt="Client Pulse" width={34} height={34} />
               <span>Client Pulse</span>
             </div>
@@ -22,7 +22,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="login-form-panel">
+        <div className="login__form-panel">
           <LoginForm />
         </div>
       </main>
