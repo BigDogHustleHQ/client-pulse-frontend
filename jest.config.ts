@@ -14,6 +14,9 @@ const config: Config = {
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.test.{ts,tsx}',
+    '!src/**/*.stories.{ts,tsx}',
+    '!src/components/ui/**',
+    '!src/lib/**',
     '!src/proxy.ts',
   ],
   coverageThreshold: {

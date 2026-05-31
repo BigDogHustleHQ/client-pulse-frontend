@@ -52,18 +52,28 @@ describe('LoginForm', () => {
     expect(screen.getByText('Welcome back')).toBeInTheDocument();
     expect(screen.getByLabelText('Business Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Sign in to platform' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /sign in with google/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Forgot password?')).toBeInTheDocument();
     expect(screen.getByText('Contact sales')).toBeInTheDocument();
   });
 
   it('should update email and password on input', () => {
     render(<LoginForm />);
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'test@company.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'test@company.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'password123' },
+    });
 
-    expect(screen.getByLabelText('Business Email')).toHaveValue('test@company.com');
+    expect(screen.getByLabelText('Business Email')).toHaveValue(
+      'test@company.com',
+    );
     expect(screen.getByLabelText('Password')).toHaveValue('password123');
   });
 
@@ -92,12 +102,21 @@ describe('LoginForm', () => {
 
   it('should sign in, populate auth store, and redirect on success', async () => {
     render(<LoginForm />);
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'test@company.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'test@company.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
     await waitFor(() => {
-      expect(mockCreate).toHaveBeenCalledWith({ identifier: 'test@company.com', password: 'password123' });
+      expect(mockCreate).toHaveBeenCalledWith({
+        identifier: 'test@company.com',
+        password: 'password123',
+      });
       expect(mockFinalize).toHaveBeenCalled();
       expect(mockSetUser).toHaveBeenCalledWith({
         clerkId: 'session_123',
@@ -113,7 +132,9 @@ describe('LoginForm', () => {
     mockSignIn.status = 'needs_second_factor';
 
     render(<LoginForm />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
     await waitFor(() => expect(mockCreate).toHaveBeenCalled());
     expect(mockSetUser).not.toHaveBeenCalled();
@@ -121,15 +142,25 @@ describe('LoginForm', () => {
   });
 
   it('should show error message on failed sign in', async () => {
-    mockCreate.mockResolvedValueOnce({ error: { message: 'Invalid credentials' } });
+    mockCreate.mockResolvedValueOnce({
+      error: { message: 'Invalid credentials' },
+    });
 
     render(<LoginForm />);
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'test@company.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'test@company.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'wrong' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Invalid credentials');
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Invalid credentials',
+      );
     });
   });
 
@@ -137,28 +168,45 @@ describe('LoginForm', () => {
     mockCreate.mockResolvedValueOnce({ error: {} });
 
     render(<LoginForm />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Please try again.');
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Something went wrong. Please try again.',
+      );
     });
   });
 
   it('should show loading state while submitting', async () => {
     mockCreate.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({ error: null }), 50)),
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ error: null }), 50),
+        ),
     );
 
     render(<LoginForm />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
-    expect(await screen.findByRole('button', { name: 'Signing in…' })).toBeDisabled();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Sign in to platform' })).toBeInTheDocument());
+    expect(
+      await screen.findByRole('button', { name: 'Signing in…' }),
+    ).toBeDisabled();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Sign in to platform' }),
+      ).toBeInTheDocument(),
+    );
   });
 
   it('should call Google sign in on button click', async () => {
     render(<LoginForm />);
-    fireEvent.click(screen.getByRole('button', { name: /sign in with google/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /sign in with google/i }),
+    );
 
     await waitFor(() => {
       expect(mockSSO).toHaveBeenCalledWith({
