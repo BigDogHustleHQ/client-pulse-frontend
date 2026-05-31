@@ -167,3 +167,48 @@ test.describe('insights: read-only dashboard', () => {
     ).toBeVisible();
   });
 });
+
+test.describe('insights widget board: customize', () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoPage(page, 'insights');
+  });
+
+  test('default board renders the five analytics widgets', async ({ page }) => {
+    const board = page.locator('[data-slot="widget-board"]');
+    await expect(board).toBeVisible();
+    await expect(board.locator('[data-slot="widget"]')).toHaveCount(5);
+  });
+
+  test('edit toggle reveals add and remove controls', async ({ page }) => {
+    await expect(page.locator('[data-slot="add-widget"]')).toHaveCount(0);
+    await page.locator('[data-slot="edit-layout-toggle"]').click();
+    await expect(page.locator('[data-slot="add-widget"]')).toBeVisible();
+    await expect(
+      page.locator('[data-slot="widget-remove"]').first(),
+    ).toBeVisible();
+  });
+
+  test('adding the Highlights widget appends it', async ({ page }) => {
+    await page.locator('[data-slot="edit-layout-toggle"]').click();
+    const before = await page.locator('[data-slot="widget"]').count();
+
+    await page.locator('[data-slot="add-widget"]').click();
+    await page
+      .locator('[data-slot="add-widget-option"][data-widget-type="highlights"]')
+      .click();
+
+    await expect(page.locator('[data-slot="widget"]')).toHaveCount(before + 1);
+  });
+
+  test('removing a widget persists across reload', async ({ page }) => {
+    await page.locator('[data-slot="edit-layout-toggle"]').click();
+    const before = await page.locator('[data-slot="widget"]').count();
+
+    await page.getByRole('button', { name: 'Remove Pros & cons' }).click();
+    await expect(page.locator('[data-slot="widget"]')).toHaveCount(before - 1);
+
+    await page.reload();
+    await expect(page.locator('main h2').first()).toBeVisible();
+    await expect(page.locator('[data-slot="widget"]')).toHaveCount(before - 1);
+  });
+});

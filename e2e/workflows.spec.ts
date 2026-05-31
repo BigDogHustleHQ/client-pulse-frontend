@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { gotoPage, topBarHeading } from './helpers';
+import { gotoPage, topBarHeading, trackConsoleErrors } from './helpers';
 
 // Deterministic mock values from src/app/api/mock/workflows/route.ts.
 const WORKFLOW_NAME = 'Weekend review responder';
@@ -138,5 +138,41 @@ test.describe('Workflows page', () => {
 
     await expect(nodes).toHaveCount(NODE_COUNT + 1);
     await expect(nodes.filter({ hasText: 'Wait' })).toHaveCount(1);
+  });
+
+  test('adding the same palette node multiple times yields distinct nodes with no duplicate-key console errors', async ({
+    page,
+  }) => {
+    // Collect console errors BEFORE navigating so we capture everything from
+    // page load through all interactions.
+    const errors = trackConsoleErrors(page);
+
+    await gotoPage(page, 'workflows');
+
+    const nodes = page.locator('[data-slot="workflow-node"]');
+    await expect(nodes).toHaveCount(NODE_COUNT);
+
+    // Click "Add Trigger" three times in a row — same palette item, same label.
+    const addTrigger = page.getByRole('button', {
+      name: 'Add Trigger',
+      exact: true,
+    });
+    await addTrigger.click();
+    await addTrigger.click();
+    await addTrigger.click();
+
+    // Canvas must grow by exactly 3 nodes (no deduplication / skips).
+    await expect(nodes).toHaveCount(NODE_COUNT + 3);
+
+    // All rendered [data-slot="workflow-node"] elements must have distinct React
+    // keys — we verify this indirectly by checking no console error containing
+    // "duplicate" or "key" was emitted (React logs "Each child in a list should
+    // have a unique 'key'" / "Encountered two children with the same key").
+    const dupErrors = errors.filter(
+      (e) =>
+        e.toLowerCase().includes('duplicate') ||
+        (e.toLowerCase().includes('key') && e.toLowerCase().includes('child')),
+    );
+    expect(dupErrors).toHaveLength(0);
   });
 });

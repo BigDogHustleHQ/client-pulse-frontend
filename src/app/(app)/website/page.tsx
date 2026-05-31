@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Check, RefreshCw, Sparkles } from 'lucide-react';
 import {
   Btn,
@@ -17,9 +17,13 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageError, PageLoading } from '@/components/shell/page-state';
+import { BuilderControls } from '@/components/website/builder-controls';
+import { DeviceToggle, type DeviceId } from '@/components/website/device-frame';
+import { LivePreview } from '@/components/website/live-preview';
 import { useWebsite } from '@/hooks/use-website';
 import { cn } from '@/lib/utils';
 import type {
+  WebsiteConfig,
   WebsiteMode,
   WebsiteModeTab,
   WebsiteQuestion,
@@ -67,7 +71,15 @@ function ModeTabs({
 }
 
 /** One wizard question row — text input or selectable vibe chips. */
-function QuestionRow({ index, q }: { index: number; q: WebsiteQuestion }) {
+function QuestionRow({
+  index,
+  q,
+  onAnswer,
+}: {
+  index: number;
+  q: WebsiteQuestion;
+  onAnswer: (q: WebsiteQuestion, value: string) => void;
+}) {
   return (
     <div className="flex flex-col gap-2 border-b border-foreground/10 pb-4 last:border-0 last:pb-0">
       <div className="flex items-center gap-2">
@@ -85,26 +97,29 @@ function QuestionRow({ index, q }: { index: number; q: WebsiteQuestion }) {
       </div>
 
       {q.kind === 'text' ? (
-        q.answer ? (
-          <p className="pl-7 text-sm text-muted-foreground">{q.answer}</p>
-        ) : (
-          <div className="pl-7">
-            <Input placeholder={q.placeholder} aria-label={q.prompt} />
-          </div>
-        )
+        <div className="pl-7">
+          <Input
+            defaultValue={q.answer}
+            placeholder={q.placeholder}
+            aria-label={q.prompt}
+            onChange={(e) => onAnswer(q, e.target.value)}
+          />
+        </div>
       ) : (
         <Inline gap="sm" className="pl-7">
           {q.options.map((opt) => {
             const picked = q.selected?.includes(opt);
             return (
-              <Chip
-                key={opt}
-                className={cn(
-                  picked && 'border-brand/40 bg-brand/10 text-brand',
-                )}
-              >
-                {opt}
-              </Chip>
+              <button key={opt} type="button" onClick={() => onAnswer(q, opt)}>
+                <Chip
+                  className={cn(
+                    'cursor-pointer',
+                    picked && 'border-brand/40 bg-brand/10 text-brand',
+                  )}
+                >
+                  {opt}
+                </Chip>
+              </button>
             );
           })}
         </Inline>
@@ -113,11 +128,10 @@ function QuestionRow({ index, q }: { index: number; q: WebsiteQuestion }) {
   );
 }
 
-/** Fake rendered-site thumbnail built from token bg blocks. */
-function SitePreview({ variation }: { variation: WebsiteVariation }) {
+/** Compact, token-styled thumbnail summarizing a variation preset. */
+function VariationThumb({ variation }: { variation: WebsiteVariation }) {
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-muted/40 p-3">
-      {/* hero block */}
       <div className="flex flex-col items-center gap-1 rounded-md bg-secondary py-5">
         <span className="font-heading text-sm font-semibold tracking-tight">
           {variation.brandName}
@@ -126,7 +140,6 @@ function SitePreview({ variation }: { variation: WebsiteVariation }) {
           {variation.tagline}
         </span>
       </div>
-      {/* menu blocks */}
       <div className="flex flex-wrap gap-1.5">
         {variation.menuItems.map((item) => (
           <span
@@ -137,7 +150,6 @@ function SitePreview({ variation }: { variation: WebsiteVariation }) {
           </span>
         ))}
       </div>
-      {/* cta buttons */}
       <div className="flex gap-1.5">
         {variation.ctas.map((cta) => (
           <span
@@ -156,14 +168,63 @@ export default function WebsitePage() {
   const { data, isLoading, isError } = useWebsite();
   const [activeMode, setActiveMode] = useState<WebsiteMode | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [generation, setGeneration] = useState(0);
+  const [device, setDevice] = useState<DeviceId>('desktop');
+  const [pickedId, setPickedId] = useState<string | null>(null);
+  const [published, setPublished] = useState(false);
+
+  // Local, editable preview config seeded from the endpoint. Synced during
+  // render when a fresh payload arrives (same prev-value pattern as Vendors).
+  const seed = data?.data.config;
+  const [config, setConfig] = useState<WebsiteConfig | null>(null);
+  const [prevSeed, setPrevSeed] = useState(seed);
+  if (seed && seed !== prevSeed) {
+    setPrevSeed(seed);
+    setConfig(seed);
+  }
+
+  const palettes = useMemo(() => data?.data.palettes ?? [], [data]);
+  const fontPairs = useMemo(() => data?.data.fontPairs ?? [], [data]);
 
   if (isLoading) return <PageLoading label="Loading the builder…" />;
-  if (isError || !data)
+  if (isError || !data || !config)
     return <PageError message="Couldn't load the builder." />;
 
   const site = data.data;
   const mode = activeMode ?? site.activeMode;
   const publishUrl = `${site.publishSubdomain}.${site.publishDomain}`;
+
+  function patchConfig(patch: Partial<WebsiteConfig>) {
+    setConfig((prev) => (prev ? { ...prev, ...patch } : prev));
+  }
+
+  // Simulated, client-only "AI" generation: brief spinner, then bump a counter
+  // so the variation grid re-keys and animates back in. No model involved.
+  function generate() {
+    if (generating) return;
+    setGenerating(true);
+    setTimeout(() => {
+      setGeneration((n) => n + 1);
+      setGenerating(false);
+    }, 900);
+  }
+
+  function pickVariation(variation: WebsiteVariation) {
+    setPickedId(variation.id);
+    patchConfig(variation.preset);
+  }
+
+  // Map a wizard answer onto config where it makes sense (name + CTA + vibe).
+  function applyAnswer(q: WebsiteQuestion, value: string) {
+    if (q.id === 'name' && value.trim()) patchConfig({ brandName: value });
+    if (q.id === 'cta' && value.trim()) patchConfig({ heroCta: value });
+    if (q.kind === 'chips' && q.id === 'vibe') {
+      if (value === 'Modern') patchConfig({ paletteId: 'modern' });
+      if (value === 'Upscale') patchConfig({ paletteId: 'mono' });
+      if (value === 'Cozy' || value === 'Rustic')
+        patchConfig({ paletteId: 'warm' });
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -174,7 +235,7 @@ export default function WebsitePage() {
           </h2>
           <p className="max-w-2xl text-sm text-muted-foreground">
             Answer five questions and AI generates three full-site variations in
-            ~30 seconds. Pick one, refine, or generate more.
+            ~30 seconds. Pick one, then edit it live below.
           </p>
         </div>
         <ModeTabs tabs={site.modes} active={mode} onChange={setActiveMode} />
@@ -199,66 +260,141 @@ export default function WebsitePage() {
         />
         <Stack gap="md">
           {site.wizard.questions.map((q, i) => (
-            <QuestionRow key={q.id} index={i + 1} q={q} />
+            <QuestionRow
+              key={q.id}
+              index={i + 1}
+              q={q}
+              onAnswer={applyAnswer}
+            />
           ))}
         </Stack>
         <div className="flex">
-          <Btn loading={generating} onClick={() => setGenerating((v) => !v)}>
+          <Btn loading={generating} onClick={generate}>
             <Sparkles className="size-4" />
             Generate 3 variations
           </Btn>
         </div>
       </Panel>
 
+      {/* Live builder: controls (left) + rendered preview (right). Stacks on
+          small screens; the preview scales to fit so it stays overflow-free. */}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+        <Panel className="lg:sticky lg:top-4">
+          <PanelHead
+            title="Customize"
+            description="Edits update the preview instantly."
+          />
+          <BuilderControls
+            config={config}
+            palettes={palettes}
+            fontPairs={fontPairs}
+            onChange={patchConfig}
+          />
+        </Panel>
+
+        <Stack gap="sm" className="min-w-0">
+          <Inline gap="sm" className="justify-between">
+            <h3 className="font-heading text-lg font-medium">Live preview</h3>
+            <DeviceToggle value={device} onChange={setDevice} />
+          </Inline>
+          <LivePreview
+            config={config}
+            palettes={palettes}
+            fontPairs={fontPairs}
+            device={device}
+          />
+          <Inline gap="sm" className="justify-between">
+            {published ? (
+              <Pill tone="success">Published → {publishUrl}</Pill>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                Not published yet
+              </span>
+            )}
+            <Btn size="sm" onClick={() => setPublished(true)}>
+              Publish → {publishUrl}
+            </Btn>
+          </Inline>
+        </Stack>
+      </div>
+
       <div className="flex flex-col gap-3">
         <h3 className="font-heading text-lg font-medium">Variations</h3>
         <Grid
-          key={mode}
+          key={`${mode}-${generation}`}
           cols={3}
           gap="md"
           className="max-lg:grid-cols-1! animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
         >
-          {site.variations.map((variation) => (
-            <Card
-              key={variation.id}
-              size="sm"
-              className="transition-all hover:-translate-y-px hover:shadow-sm motion-reduce:transition-none motion-reduce:transform-none"
-            >
-              <CardContent className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <Pill tone={variation.recommended ? 'brand' : 'neutral'}>
-                    {variation.recommended
-                      ? `${variation.label} · Recommended`
-                      : variation.label}
-                  </Pill>
-                  <span className="text-xs text-muted-foreground">
-                    {variation.style}
-                  </span>
-                </div>
-                <SitePreview variation={variation} />
-              </CardContent>
-              <CardFooter className="gap-2">
-                <Btn size="sm" className="flex-1">
-                  Pick
-                </Btn>
-                <Btn
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label="Regenerate variation"
-                >
-                  <RefreshCw className="size-3.5" />
-                </Btn>
-              </CardFooter>
-            </Card>
-          ))}
+          {site.variations.map((variation) => {
+            const picked = variation.id === pickedId;
+            return (
+              <Card
+                key={variation.id}
+                size="sm"
+                data-slot="variation-card"
+                data-picked={picked || undefined}
+                className={cn(
+                  'transition-all hover:-translate-y-px hover:shadow-sm motion-reduce:transition-none motion-reduce:transform-none',
+                  picked && 'ring-2 ring-brand/50',
+                )}
+              >
+                <CardContent className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <Pill tone={variation.recommended ? 'brand' : 'neutral'}>
+                      {variation.recommended
+                        ? `${variation.label} · Recommended`
+                        : variation.label}
+                    </Pill>
+                    <span className="text-xs text-muted-foreground">
+                      {variation.style}
+                    </span>
+                  </div>
+                  <VariationThumb variation={variation} />
+                </CardContent>
+                <CardFooter className="gap-2">
+                  <Btn
+                    size="sm"
+                    className="flex-1"
+                    variant={picked ? 'secondary' : 'default'}
+                    onClick={() => pickVariation(variation)}
+                  >
+                    {picked ? (
+                      <>
+                        <Check className="size-3.5" />
+                        Applied
+                      </>
+                    ) : (
+                      'Pick'
+                    )}
+                  </Btn>
+                  <Btn
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="Regenerate variation"
+                    onClick={generate}
+                  >
+                    <RefreshCw className="size-3.5" />
+                  </Btn>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </Grid>
 
         <Inline gap="sm" className="justify-between">
-          <Btn variant="ghost" size="sm">
+          <Btn
+            variant="ghost"
+            size="sm"
+            loading={generating}
+            onClick={generate}
+          >
             <Sparkles className="size-3.5" />
             Generate 3 more
           </Btn>
-          <Btn size="sm">Publish → {publishUrl}</Btn>
+          <Btn size="sm" onClick={() => setPublished(true)}>
+            Publish → {publishUrl}
+          </Btn>
         </Inline>
       </div>
     </div>

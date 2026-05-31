@@ -308,8 +308,16 @@ export default function WorkflowsPage() {
   const { data, isLoading, isError } = useWorkflows();
 
   // Lift the canvas graph into local state so palette adds/removes mutate it.
-  const [nodes, setNodes] = React.useState<WorkflowNode[]>([]);
-  const [edges, setEdges] = React.useState<WorkflowEdge[]>([]);
+  // nodes and edges live in ONE state object so a single pure updater can append
+  // a node and its connecting edge together. Never nesting one setState inside
+  // another's updater is what fixes the duplicate-key bug: under React 19
+  // StrictMode updaters run twice, and a nested setEdges would append the same
+  // edge twice (duplicate keys on <g key={edge.id}>). A single pure updater is
+  // idempotent — the doubled invocation just recomputes the same result.
+  const [graph, setGraph] = React.useState<{
+    nodes: WorkflowNode[];
+    edges: WorkflowEdge[];
+  }>({ nodes: [], edges: [] });
 
   // Seed local state from the endpoint without an effect: when a fresh payload
   // arrives, sync during render (the render-time pattern used in vendors/page).
@@ -317,29 +325,35 @@ export default function WorkflowsPage() {
   const [prevSeed, setPrevSeed] = React.useState(seed);
   if (seed && seed !== prevSeed) {
     setPrevSeed(seed);
-    setNodes(seed.nodes);
-    setEdges(seed.edges);
+    setGraph({ nodes: seed.nodes, edges: seed.edges });
   }
 
-  // Append a node from a palette item and connect it from the current last node.
+  // Append a node from a palette item, connecting it from the current last node.
+  // `next` is created once outside the updater so its id is stable; the updater
+  // is pure (derives everything from `prev`), so StrictMode's double invocation
+  // can never produce duplicate nodes or edges.
   const appendNode = React.useCallback((item: WorkflowPaletteNode) => {
     const next = nodeFromPalette(item);
-    setNodes((prev) => {
-      const last = prev[prev.length - 1];
-      if (last) {
-        setEdges((prevEdges) => [
-          ...prevEdges,
-          { id: `e-${last.id}-${next.id}`, from: last.id, to: next.id },
-        ]);
-      }
-      return [...prev, next];
+    setGraph((prev) => {
+      const last = prev.nodes[prev.nodes.length - 1];
+      return {
+        nodes: [...prev.nodes, next],
+        edges: last
+          ? [
+              ...prev.edges,
+              { id: `e-${last.id}-${next.id}`, from: last.id, to: next.id },
+            ]
+          : prev.edges,
+      };
     });
   }, []);
 
   // Remove a canvas node and any edges touching it.
   const handleRemove = React.useCallback((id: string) => {
-    setNodes((prev) => prev.filter((n) => n.id !== id));
-    setEdges((prev) => prev.filter((e) => e.from !== id && e.to !== id));
+    setGraph((prev) => ({
+      nodes: prev.nodes.filter((n) => n.id !== id),
+      edges: prev.edges.filter((e) => e.from !== id && e.to !== id),
+    }));
   }, []);
 
   // Dropping a palette item onto the "canvas" dropzone appends its node too.
@@ -414,8 +428,8 @@ export default function WorkflowsPage() {
             />
             <div className="py-4">
               <WorkflowCanvas
-                nodes={nodes}
-                edges={edges}
+                nodes={graph.nodes}
+                edges={graph.edges}
                 onRemove={handleRemove}
               />
             </div>

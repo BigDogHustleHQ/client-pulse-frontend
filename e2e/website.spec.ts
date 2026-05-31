@@ -2,9 +2,12 @@ import { test, expect } from '@playwright/test';
 import { gotoPage, topBarHeading } from './helpers';
 
 // Website Builder behavior suite. All assertions are pinned to the deterministic
-// mock at src/app/api/mock/website/route.ts. The page is read-only this run
-// (ModeTabs flip local state; Generate toggles a local loading flag; Pick /
-// Regenerate / Publish are deferred placeholders that merely render).
+// mock at src/app/api/mock/website/route.ts. The builder is now interactive:
+// editing controls re-renders a live iframe preview, the device toggle changes
+// the simulated viewport, picking a variation applies its preset to the
+// preview, and Generate simulates client-side AI generation.
+const PREVIEW_FRAME = '[data-slot="website-preview"] iframe';
+
 test.describe('website builder', () => {
   test('loads the Website Builder shell', async ({ page }) => {
     await gotoPage(page, 'website');
@@ -47,21 +50,23 @@ test.describe('website builder', () => {
     await expect(generate).toBeVisible();
     await expect(generate).toBeEnabled();
 
-    // Clicking flips the page's local `generating` flag, so the Btn renders its
-    // loading state: aria-busy + disabled (with a spinner).
+    // Clicking starts a simulated generation: the Btn renders its loading state
+    // (aria-busy + disabled) until the timeout resolves and it re-enables.
     await generate.click();
     await expect(generate).toHaveAttribute('aria-busy', 'true');
     await expect(generate).toBeDisabled();
+    await expect(generate).toBeEnabled({ timeout: 5000 });
   });
 
-  test('renders three variation previews from the mock', async ({ page }) => {
+  test('renders three variation cards from the mock', async ({ page }) => {
     await gotoPage(page, 'website');
 
-    // Each variation Card embeds a SitePreview whose hero shows the brandName.
+    // Each variation card shows its brand name in the thumbnail.
     await expect(page.getByText("Bella's", { exact: true })).toBeVisible();
     await expect(page.getByText("BELLA'S", { exact: true })).toBeVisible();
     await expect(page.getByText("bella's", { exact: true })).toBeVisible();
 
+    await expect(page.locator('[data-slot="variation-card"]')).toHaveCount(3);
     // Three "Pick" buttons — one per variation Card.
     await expect(page.getByRole('button', { name: 'Pick' })).toHaveCount(3);
     // Three per-card Regenerate controls.
@@ -70,34 +75,106 @@ test.describe('website builder', () => {
     ).toHaveCount(3);
   });
 
-  test('deferred Pick / Regenerate / Publish render without errors', async ({
+  test('renders the live preview iframe with the seeded config', async ({
     page,
   }) => {
-    // Track uncaught page/app errors only. Dev-server resource-load noise (e.g.
-    // SSL cipher mismatches on external assets) is environment-level, not an app
-    // fault, so we filter to genuine runtime exceptions.
+    await gotoPage(page, 'website');
+
+    const frame = page.frameLocator(PREVIEW_FRAME);
+    await expect(
+      frame.getByRole('heading', { level: 1, name: "Bella's Trattoria" }),
+    ).toBeVisible();
+    // Menu section content from the mock renders inside the preview.
+    await expect(frame.getByText('Margherita').first()).toBeVisible();
+  });
+
+  test('editing the brand name updates the live preview', async ({ page }) => {
+    await gotoPage(page, 'website');
+
+    const brand = page.getByLabel('Brand name');
+    await brand.fill('Casa Verde');
+
+    const frame = page.frameLocator(PREVIEW_FRAME);
+    await expect(
+      frame.getByRole('heading', { level: 1, name: 'Casa Verde' }),
+    ).toBeVisible();
+  });
+
+  test('toggling a section hides it from the preview', async ({ page }) => {
+    await gotoPage(page, 'website');
+
+    const frame = page.frameLocator(PREVIEW_FRAME);
+    await expect(frame.getByText('Margherita').first()).toBeVisible();
+
+    // The Menu section toggle in the controls panel.
+    await page
+      .locator('[data-slot="builder-controls"] [data-section="menu"]')
+      .click();
+    await expect(frame.getByText('Margherita')).toHaveCount(0);
+  });
+
+  test('device toggle changes the simulated preview width', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'website');
+
+    const toggle = page.locator('[data-slot="device-toggle"]');
+    await expect(toggle).toBeVisible();
+
+    const preview = page.locator('[data-slot="website-preview"]');
+    await expect(preview).toHaveAttribute('data-device', 'desktop');
+
+    const iframe = page.locator(PREVIEW_FRAME);
+    const desktopBox = await iframe.boundingBox();
+
+    await toggle.getByRole('radio', { name: 'Mobile' }).click();
+    await expect(preview).toHaveAttribute('data-device', 'mobile');
+
+    const mobileBox = await iframe.boundingBox();
+    expect(mobileBox!.width).toBeLessThan(desktopBox!.width);
+  });
+
+  test('picking a variation applies its preset to the live preview', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'website');
+
+    // Variation B uses the dark "Modern" preset and an uppercase brand name.
+    const cardB = page.locator('[data-slot="variation-card"]').nth(1);
+    await cardB.getByRole('button', { name: 'Pick' }).click();
+
+    // The picked card flips to its "Applied" state.
+    await expect(cardB.getByRole('button', { name: 'Applied' })).toBeVisible();
+
+    // The preview hero now reflects the applied brand name + tagline.
+    const frame = page.frameLocator(PREVIEW_FRAME);
+    await expect(
+      frame.getByRole('heading', { level: 1, name: "BELLA'S" }),
+    ).toBeVisible();
+    await expect(page.getByLabel('Brand name')).toHaveValue("BELLA'S");
+  });
+
+  test('publish + secondary generate render without errors', async ({
+    page,
+  }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => pageErrors.push(String(err)));
     await gotoPage(page, 'website');
 
-    // Publish CTA resolves the mock subdomain + domain.
+    // Publish CTA resolves the mock subdomain + domain (rendered twice).
     await expect(
-      page.getByRole('button', { name: 'Publish → bella.vendrr.app' }),
+      page.getByRole('button', { name: 'Publish → bella.vendrr.app' }).first(),
     ).toBeVisible();
-    // The "Generate 3 more" secondary action also renders.
     await expect(
       page.getByRole('button', { name: 'Generate 3 more' }),
     ).toBeVisible();
 
-    // Deferred placeholders: clicking them must not throw.
-    await page.getByRole('button', { name: 'Pick' }).first().click();
+    // Publishing surfaces the published URL pill.
     await page
-      .getByRole('button', { name: 'Regenerate variation' })
+      .getByRole('button', { name: 'Publish → bella.vendrr.app' })
       .first()
       .click();
-    await expect(
-      page.getByRole('button', { name: 'Publish → bella.vendrr.app' }),
-    ).toBeVisible();
+    await expect(page.getByText('Published → bella.vendrr.app')).toBeVisible();
 
     expect(pageErrors).toEqual([]);
   });
