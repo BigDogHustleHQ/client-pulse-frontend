@@ -4,7 +4,13 @@ import * as React from 'react';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { Camera, AtSign, Music2, Sparkles } from 'lucide-react';
-import { ApprovalBar, ChatComposer, MockAIProvider } from '@/components/ai';
+import {
+  ApprovalBar,
+  ChatComposer,
+  DraftStatus,
+  MockAIProvider,
+  type DraftResolution,
+} from '@/components/ai';
 import { DragDropProvider, Draggable, Dropzone } from '@/components/dnd';
 import {
   Badge,
@@ -64,7 +70,11 @@ function PostCard({ post, selected }: { post: SocialPost; selected: boolean }) {
   return (
     <Card
       size="sm"
-      className={selected ? 'w-full ring-2 ring-brand' : 'w-full'}
+      className={
+        selected
+          ? 'w-full ring-2 ring-brand transition-all duration-200 motion-reduce:transition-none'
+          : 'w-full transition-all duration-200 motion-reduce:transition-none'
+      }
     >
       <CardContent className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2">
@@ -163,6 +173,9 @@ function Studio({ data }: { data: SocialData }) {
   const [selectedId, setSelectedId] = React.useState<string | null>(
     data.posts[0]?.id ?? null,
   );
+  const [resolution, setResolution] = React.useState<DraftResolution | null>(
+    null,
+  );
 
   const selected = posts.find((p) => p.id === selectedId) ?? null;
 
@@ -257,7 +270,10 @@ function Studio({ data }: { data: SocialData }) {
 
         {selected && (
           <MockAIProvider tokens={data.aiTokens} delay={40}>
-            <div className="flex flex-col gap-4">
+            <div
+              key={selectedId}
+              className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
+            >
               <ChatComposer
                 placeholder="make this more playful…"
                 defaultValue="Make this more playful"
@@ -281,9 +297,18 @@ function Studio({ data }: { data: SocialData }) {
                 </Grid>
               </div>
 
-              <ApprovalBar
-                value={data.variations[0]?.text ?? selected.caption}
-              />
+              {resolution ? (
+                <DraftStatus
+                  resolution={resolution}
+                  onUndo={() => setResolution(null)}
+                />
+              ) : (
+                <ApprovalBar
+                  value={data.variations[0]?.text ?? selected.caption}
+                  onApprove={() => setResolution('approved')}
+                  onReject={() => setResolution('rejected')}
+                />
+              )}
             </div>
           </MockAIProvider>
         )}

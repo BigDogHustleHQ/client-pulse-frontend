@@ -24,7 +24,9 @@ function Btn({
       className={cn(className)}
       {...props}
     >
-      {loading && <Loader2 className="animate-spin" />}
+      {loading && (
+        <Loader2 className="animate-spin animate-in fade-in-0 zoom-in-95 duration-200 motion-reduce:animate-none" />
+      )}
       {children}
     </Button>
   );

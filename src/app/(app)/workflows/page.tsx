@@ -14,7 +14,13 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
-import { ApprovalBar, ChatComposer, MockAIProvider } from '@/components/ai';
+import {
+  ApprovalBar,
+  ChatComposer,
+  DraftStatus,
+  MockAIProvider,
+  type DraftResolution,
+} from '@/components/ai';
 import { DragDropProvider, Draggable } from '@/components/dnd';
 import { Btn, Panel, PanelHead, Pill, Stack } from '@/components/primitives';
 import { PageError, PageLoading } from '@/components/shell/page-state';
@@ -83,11 +89,15 @@ function nodeCenter(slot: { col: number; row: number }) {
 
 function CanvasNode({ node }: { node: WorkflowNode }) {
   const isApproval = node.kind === 'approval';
+  const [resolution, setResolution] = React.useState<DraftResolution | null>(
+    null,
+  );
+
   return (
     <div
       data-slot="workflow-node"
       style={{ width: NODE_W }}
-      className="flex flex-col gap-2 rounded-xl bg-card p-3 text-card-foreground ring-1 ring-foreground/10"
+      className="flex flex-col gap-2 rounded-xl bg-card p-3 text-card-foreground ring-1 ring-foreground/10 animate-in fade-in-0 duration-300 motion-reduce:animate-none"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5">
@@ -96,9 +106,20 @@ function CanvasNode({ node }: { node: WorkflowNode }) {
         </div>
         {node.tag && <Pill tone={node.tagTone}>{node.tag}</Pill>}
       </div>
-      {isApproval && node.approvalDraft && (
-        <ApprovalBar value={node.approvalDraft} />
-      )}
+      {isApproval &&
+        node.approvalDraft &&
+        (resolution ? (
+          <DraftStatus
+            resolution={resolution}
+            onUndo={() => setResolution(null)}
+          />
+        ) : (
+          <ApprovalBar
+            value={node.approvalDraft}
+            onApprove={() => setResolution('approved')}
+            onReject={() => setResolution('rejected')}
+          />
+        ))}
     </div>
   );
 }

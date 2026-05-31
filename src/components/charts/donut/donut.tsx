@@ -49,6 +49,7 @@ function Donut({
       data-slot="donut"
       className={cn(
         'flex flex-col items-center gap-4 rounded-xl bg-card p-5 ring-1 ring-foreground/10',
+        'animate-in fade-in-0 duration-500 motion-reduce:animate-none',
         className,
       )}
       {...props}

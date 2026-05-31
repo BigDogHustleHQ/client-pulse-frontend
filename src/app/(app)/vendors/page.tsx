@@ -8,7 +8,12 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { Sparkles, Star } from 'lucide-react';
-import { AIReplyDraft, MockAIProvider } from '@/components/ai';
+import {
+  AIReplyDraft,
+  DraftStatus,
+  MockAIProvider,
+  type DraftResolution,
+} from '@/components/ai';
 import { DragDropProvider, Draggable, Dropzone } from '@/components/dnd';
 import { Btn, Panel, PanelHead, Pill } from '@/components/primitives';
 import { PageError, PageLoading } from '@/components/shell/page-state';
@@ -162,6 +167,10 @@ export default function VendorsPage() {
   const [activeVendorId, setActiveVendorId] = React.useState<string | null>(
     null,
   );
+  const [resolution, setResolution] = React.useState<DraftResolution | null>(
+    null,
+  );
+  const [prevDraftText, setPrevDraftText] = React.useState<string | null>(null);
 
   // Seed local board state from the endpoint without an effect: when a fresh
   // payload arrives, sync during render (the pattern ApprovalBar uses).
@@ -183,6 +192,14 @@ export default function VendorsPage() {
   const draftText = activeVendor
     ? `Hi ${activeVendor.poc ?? 'there'}, we run a 90-seat bistro and would love a wholesale quote from ${activeVendor.name}. Could we set up a quick call this week? Thanks — Maria`
     : coldEmail.draft;
+
+  // When the user picks a different vendor the draft changes, so reset the
+  // resolution during render (same prev-value sync pattern as the board seed)
+  // to make the fresh draft approvable again.
+  if (draftText !== prevDraftText) {
+    setPrevDraftText(draftText);
+    setResolution(null);
+  }
 
   function handleMove(event: DragEndEvent) {
     const { active, over } = event;
@@ -246,13 +263,31 @@ export default function VendorsPage() {
           }
           actions={<Pill tone="brand">AI</Pill>}
         />
-        <MockAIProvider key={draftText} tokens={[draftText]} delay={0}>
-          <AIReplyDraft
-            title={coldEmail.title}
-            prompt={draftPrompt}
-            confidence={coldEmail.confidence}
-          />
-        </MockAIProvider>
+        <div
+          key={draftText}
+          className="animate-in fade-in duration-300 motion-reduce:animate-none"
+        >
+          {resolution ? (
+            <DraftStatus
+              resolution={resolution}
+              onUndo={() => setResolution(null)}
+            />
+          ) : (
+            <MockAIProvider key={draftText} tokens={[draftText]} delay={0}>
+              <AIReplyDraft
+                title={
+                  activeVendor
+                    ? `Cold email — ${activeVendor.name}`
+                    : coldEmail.title
+                }
+                prompt={draftPrompt}
+                confidence={coldEmail.confidence}
+                onApprove={() => setResolution('approved')}
+                onReject={() => setResolution('rejected')}
+              />
+            </MockAIProvider>
+          )}
+        </div>
       </Panel>
     </div>
   );

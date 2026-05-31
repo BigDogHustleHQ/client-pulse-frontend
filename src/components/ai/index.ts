@@ -16,3 +16,8 @@ export { ToneSlider } from './tone-slider/tone-slider';
 export type { ToneSliderProps } from './tone-slider/tone-slider';
 export { AIReplyDraft, confidenceTone } from './ai-reply-draft/ai-reply-draft';
 export type { AIReplyDraftProps } from './ai-reply-draft/ai-reply-draft';
+export { DraftStatus } from './draft-status/draft-status';
+export type {
+  DraftStatusProps,
+  DraftResolution,
+} from './draft-status/draft-status';

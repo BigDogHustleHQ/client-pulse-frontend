@@ -91,7 +91,7 @@ function ChatComposer({
         <div
           data-slot="chat-composer-response"
           aria-live="polite"
-          className="rounded-xl bg-secondary/60 p-3 text-sm text-secondary-foreground"
+          className="animate-in fade-in slide-in-from-bottom-1 duration-300 rounded-xl bg-secondary/60 p-3 text-sm text-secondary-foreground motion-reduce:animate-none"
         >
           {response}
           {streaming && (

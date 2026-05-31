@@ -65,7 +65,7 @@ function ToneSlider({
         </label>
         <span
           data-slot="tone-slider-value"
-          className="text-sm font-medium text-brand"
+          className="text-sm font-medium text-brand transition-colors duration-200 motion-reduce:transition-none"
         >
           {currentLabel}
         </span>

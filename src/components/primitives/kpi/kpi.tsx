@@ -36,6 +36,7 @@ function KPI({
       data-slot="kpi"
       className={cn(
         'flex flex-col gap-1.5 rounded-xl bg-card p-4 ring-1 ring-foreground/10',
+        'animate-in fade-in-0 duration-300 motion-reduce:animate-none',
         className,
       )}
       {...props}

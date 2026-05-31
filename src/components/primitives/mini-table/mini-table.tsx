@@ -59,7 +59,7 @@ function MiniTable<T extends Record<string, unknown>>({
           data.map((row, i) => (
             <tr
               key={rowKey(row, i)}
-              className="border-b border-border/60 last:border-0"
+              className="border-b border-border/60 transition-colors last:border-0 hover:bg-muted/40 motion-reduce:transition-none"
             >
               {columns.map((c) => (
                 <td

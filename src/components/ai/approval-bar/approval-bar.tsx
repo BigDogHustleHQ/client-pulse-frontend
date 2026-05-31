@@ -50,7 +50,10 @@ function ApprovalBar({
       <div
         data-slot="approval-bar"
         data-editing="true"
-        className={cn('flex flex-col gap-2', className)}
+        className={cn(
+          'animate-in fade-in zoom-in-95 duration-200 flex flex-col gap-2 motion-reduce:animate-none',
+          className,
+        )}
         {...props}
       >
         <textarea

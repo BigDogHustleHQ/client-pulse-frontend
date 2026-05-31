@@ -59,7 +59,7 @@ function Draggable({
       data-dragging={isDragging || undefined}
       style={composedStyle}
       className={cn(
-        'flex items-center gap-2 rounded-xl bg-card p-3 text-card-foreground ring-1 ring-foreground/10',
+        'flex items-center gap-2 rounded-xl bg-card p-3 text-card-foreground ring-1 ring-foreground/10 transition-shadow duration-200 ease-out motion-reduce:transition-none',
         isDragging && 'z-10 opacity-60 shadow-lg ring-brand/40',
         className,
       )}

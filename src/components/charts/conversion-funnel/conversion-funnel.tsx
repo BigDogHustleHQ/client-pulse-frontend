@@ -43,6 +43,7 @@ function ConversionFunnel({
         data-slot="conversion-funnel"
         className={cn(
           'flex min-h-32 items-center justify-center rounded-xl bg-card p-5 text-sm text-muted-foreground ring-1 ring-foreground/10',
+          'animate-in fade-in-0 duration-500 motion-reduce:animate-none',
           className,
         )}
         {...props}
@@ -57,6 +58,7 @@ function ConversionFunnel({
       data-slot="conversion-funnel"
       className={cn(
         'flex flex-col gap-3 rounded-xl bg-card p-5 ring-1 ring-foreground/10',
+        'animate-in fade-in-0 duration-500 motion-reduce:animate-none',
         className,
       )}
       {...props}

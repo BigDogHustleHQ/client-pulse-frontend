@@ -17,6 +17,13 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // Tooling output + local scratch dirs — not source.
+    'coverage/**',
+    'playwright-report/**',
+    'test-results/**',
+    'storybook-static/**',
+    '.remember/**',
+    '.swc/**',
   ]),
   ...storybook.configs['flat/recommended'],
 ]);

@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const fillVariants = cva(
-  'h-full rounded-full transition-[width] duration-500',
+  'h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none',
   {
     variants: {
       tone: {

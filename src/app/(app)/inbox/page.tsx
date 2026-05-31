@@ -2,7 +2,13 @@
 
 import * as React from 'react';
 import { Star } from 'lucide-react';
-import { AIReplyDraft, MockAIProvider, ToneSlider } from '@/components/ai';
+import {
+  AIReplyDraft,
+  DraftStatus,
+  MockAIProvider,
+  ToneSlider,
+  type DraftResolution,
+} from '@/components/ai';
 import {
   Badge,
   Inline,
@@ -101,6 +107,9 @@ function Thread({ inbox }: { inbox: InboxData }) {
   const channel = inbox.channels.find((c) => c.id === msg.channelId);
 
   const [tone, setTone] = React.useState(50);
+  const [resolution, setResolution] = React.useState<DraftResolution | null>(
+    null,
+  );
 
   const belowThreshold = reply.confidence < threshold;
   const canAutoSend = !belowThreshold && Boolean(channel?.autoSend);
@@ -140,7 +149,21 @@ function Thread({ inbox }: { inbox: InboxData }) {
 
       <MockAIProvider tokens={[reply.draft]} delay={0}>
         <Stack gap="sm">
-          <AIReplyDraft prompt={reply.prompt} confidence={reply.confidence} />
+          {resolution ? (
+            <Panel>
+              <DraftStatus
+                resolution={resolution}
+                onUndo={() => setResolution(null)}
+              />
+            </Panel>
+          ) : (
+            <AIReplyDraft
+              prompt={reply.prompt}
+              confidence={reply.confidence}
+              onApprove={() => setResolution('approved')}
+              onReject={() => setResolution('rejected')}
+            />
+          )}
           <Panel>
             <ToneSlider value={tone} onChange={setTone} label="Reply tone" />
           </Panel>

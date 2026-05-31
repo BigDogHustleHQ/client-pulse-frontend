@@ -92,7 +92,12 @@ function AIReplyDraft({
         aria-live="polite"
         className="rounded-lg bg-secondary/50 p-3 text-sm whitespace-pre-wrap text-foreground"
       >
-        {loading ? 'Drafting…' : draft}
+        <span
+          key={loading ? 'loading' : 'drafted'}
+          className="animate-in fade-in duration-300 motion-reduce:animate-none"
+        >
+          {loading ? 'Drafting…' : draft}
+        </span>
       </p>
 
       <ApprovalBar

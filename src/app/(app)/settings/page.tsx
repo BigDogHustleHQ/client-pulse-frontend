@@ -66,7 +66,7 @@ function SectionTabs({
             onClick={() => onSelect(s.id)}
             aria-current={active === s.id ? 'page' : undefined}
             className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+              'rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] motion-reduce:transition-none motion-reduce:transform-none',
               active === s.id
                 ? 'bg-secondary text-foreground'
                 : 'text-muted-foreground hover:text-foreground',
@@ -83,8 +83,12 @@ function SectionTabs({
 /** Local integration card — built inline per the page spec. */
 function IntegrationCard({
   integration,
+  connected,
+  onToggle,
 }: {
   integration: IntegrationProvider;
+  connected: boolean;
+  onToggle: () => void;
 }) {
   return (
     <Panel className="gap-3">
@@ -93,8 +97,8 @@ function IntegrationCard({
           <IntegrationIcon name={integration.icon} />
         </span>
         <StatusDot
-          tone={integration.connected ? 'online' : 'offline'}
-          label={integration.connected ? 'Connected' : 'Not linked'}
+          tone={connected ? 'online' : 'offline'}
+          label={connected ? 'Connected' : 'Not linked'}
         />
       </div>
       <div className="flex flex-col gap-0.5">
@@ -106,11 +110,12 @@ function IntegrationCard({
         </p>
       </div>
       <Btn
-        variant={integration.connected ? 'secondary' : 'default'}
+        variant={connected ? 'secondary' : 'default'}
         size="sm"
         className="self-start"
+        onClick={onToggle}
       >
-        {integration.connected ? 'Revoke' : 'Connect'}
+        {connected ? 'Revoke' : 'Connect'}
       </Btn>
     </Panel>
   );
@@ -131,6 +136,7 @@ export default function SettingsPage() {
   const [tone, setTone] = React.useState(0);
   const [selectedTier, setSelectedTier] = React.useState('');
   const [notifs, setNotifs] = React.useState<Record<string, boolean>>({});
+  const [connected, setConnected] = React.useState<Record<string, boolean>>({});
   const hydrated = React.useRef(false);
 
   const settings = data?.data;
@@ -143,6 +149,9 @@ export default function SettingsPage() {
     setSelectedTier(settings.budget.selectedTierId);
     setNotifs(
       Object.fromEntries(settings.notifications.map((n) => [n.id, n.enabled])),
+    );
+    setConnected(
+      Object.fromEntries(settings.integrations.map((i) => [i.id, i.connected])),
     );
   }, [settings]);
 
@@ -182,161 +191,178 @@ export default function SettingsPage() {
 
       <SectionTabs active={active} onSelect={setActive} />
 
-      {show('integrations') && (
-        <Stack gap="md">
-          <PanelHead
-            title="Integrations"
-            description="Connect the tools that feed ClientPulse."
-          />
-          <Grid
-            cols={3}
-            gap="md"
-            className="max-lg:grid-cols-2 max-sm:grid-cols-1"
-          >
-            {integrations.map((i) => (
-              <IntegrationCard key={i.id} integration={i} />
-            ))}
-          </Grid>
-        </Stack>
-      )}
-
-      {show('brand') && (
-        <Panel>
-          <PanelHead
-            title="Brand profile"
-            description="This shapes how AI outputs sound."
-          />
+      <div
+        key={active}
+        className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
+      >
+        {show('integrations') && (
           <Stack gap="md">
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">Business</span>
-                <span className="font-heading text-base font-medium">
-                  {brand.name}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">Palette</span>
-                <Inline gap="xs">
-                  {brand.palette.map((c) => (
-                    <span
-                      key={c}
-                      className="size-5 rounded-full ring-1 ring-foreground/10"
-                      style={{ backgroundColor: c }}
-                      title={c}
-                    />
-                  ))}
-                </Inline>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">
-                  Typography
-                </span>
-                <span className="text-sm">{brand.typography}</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground">Voice</span>
-              <span className="text-sm">{brand.voice}</span>
-            </div>
-            <ToneSlider
-              label="Brand voice"
-              value={tone}
-              onChange={setTone}
-              stops={['Formal', 'Balanced', 'Playful']}
-              className="max-w-md"
+            <PanelHead
+              title="Integrations"
+              description="Connect the tools that feed ClientPulse."
             />
-          </Stack>
-        </Panel>
-      )}
-
-      {show('budget') && (
-        <Panel>
-          <PanelHead
-            title="Budget tier"
-            description="Cap monthly AI spend by plan."
-          />
-          <Stack gap="md">
-            <Grid cols={4} gap="sm" className="max-sm:grid-cols-2">
-              {budget.tiers.map((t) => {
-                const selected = selectedTier === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTier(t.id)}
-                    aria-pressed={selected}
-                    className={cn(
-                      'flex flex-col items-start gap-0.5 rounded-xl p-3 text-left ring-1 transition-colors',
-                      selected
-                        ? 'bg-secondary ring-brand'
-                        : 'bg-card ring-foreground/10 hover:ring-foreground/20',
-                    )}
-                  >
-                    <span className="flex items-center gap-2 text-sm font-medium">
-                      <StatusDot tone={selected ? 'brand' : 'offline'} />
-                      {t.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      ${t.priceCap}/mo
-                    </span>
-                  </button>
-                );
-              })}
-            </Grid>
-            <ProgressBar
-              label={`AI spend — $${budget.spend} / $${budget.budget} this month`}
-              value={budget.spend}
-              max={budget.budget}
-              showValue
-              tone={budget.spend / budget.budget >= 0.8 ? 'warning' : 'brand'}
-            />
-          </Stack>
-        </Panel>
-      )}
-
-      {show('team') && (
-        <Panel>
-          <PanelHead title="Team" description="Members and their roles." />
-          <MiniTable<TeamMember>
-            columns={teamColumns}
-            data={team}
-            rowKey={(m) => m.id}
-          />
-        </Panel>
-      )}
-
-      {show('notifications') && (
-        <Panel>
-          <PanelHead
-            title="Notifications"
-            description="Choose what we ping you about."
-          />
-          <Stack gap="sm">
-            {notifications.map((n: NotificationPref) => (
-              <Label
-                key={n.id}
-                htmlFor={`notif-${n.id}`}
-                className="items-start gap-3"
-              >
-                <Checkbox
-                  id={`notif-${n.id}`}
-                  checked={notifs[n.id] ?? false}
-                  onCheckedChange={(v) =>
-                    setNotifs((prev) => ({ ...prev, [n.id]: v === true }))
+            <Grid
+              cols={3}
+              gap="md"
+              className="max-lg:grid-cols-2 max-sm:grid-cols-1"
+            >
+              {integrations.map((i) => (
+                <IntegrationCard
+                  key={i.id}
+                  integration={i}
+                  connected={connected[i.id] ?? i.connected}
+                  onToggle={() =>
+                    setConnected((prev) => ({
+                      ...prev,
+                      [i.id]: !(prev[i.id] ?? i.connected),
+                    }))
                   }
-                  className="mt-0.5"
                 />
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">{n.label}</span>
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {n.description}
-                  </span>
-                </span>
-              </Label>
-            ))}
+              ))}
+            </Grid>
           </Stack>
-        </Panel>
-      )}
+        )}
+
+        {show('brand') && (
+          <Panel>
+            <PanelHead
+              title="Brand profile"
+              description="This shapes how AI outputs sound."
+            />
+            <Stack gap="md">
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-muted-foreground">
+                    Business
+                  </span>
+                  <span className="font-heading text-base font-medium">
+                    {brand.name}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-muted-foreground">Palette</span>
+                  <Inline gap="xs">
+                    {brand.palette.map((c) => (
+                      <span
+                        key={c}
+                        className="size-5 rounded-full ring-1 ring-foreground/10"
+                        style={{ backgroundColor: c }}
+                        title={c}
+                      />
+                    ))}
+                  </Inline>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-muted-foreground">
+                    Typography
+                  </span>
+                  <span className="text-sm">{brand.typography}</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted-foreground">Voice</span>
+                <span className="text-sm">{brand.voice}</span>
+              </div>
+              <ToneSlider
+                label="Brand voice"
+                value={tone}
+                onChange={setTone}
+                stops={['Formal', 'Balanced', 'Playful']}
+                className="max-w-md"
+              />
+            </Stack>
+          </Panel>
+        )}
+
+        {show('budget') && (
+          <Panel>
+            <PanelHead
+              title="Budget tier"
+              description="Cap monthly AI spend by plan."
+            />
+            <Stack gap="md">
+              <Grid cols={4} gap="sm" className="max-sm:grid-cols-2">
+                {budget.tiers.map((t) => {
+                  const selected = selectedTier === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSelectedTier(t.id)}
+                      aria-pressed={selected}
+                      className={cn(
+                        'flex flex-col items-start gap-0.5 rounded-xl p-3 text-left ring-1 transition-all duration-200 active:scale-[0.98] motion-reduce:transition-none motion-reduce:transform-none',
+                        selected
+                          ? 'bg-secondary ring-brand'
+                          : 'bg-card ring-foreground/10 hover:ring-foreground/20',
+                      )}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        <StatusDot tone={selected ? 'brand' : 'offline'} />
+                        {t.label}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ${t.priceCap}/mo
+                      </span>
+                    </button>
+                  );
+                })}
+              </Grid>
+              <ProgressBar
+                label={`AI spend — $${budget.spend} / $${budget.budget} this month`}
+                value={budget.spend}
+                max={budget.budget}
+                showValue
+                tone={budget.spend / budget.budget >= 0.8 ? 'warning' : 'brand'}
+              />
+            </Stack>
+          </Panel>
+        )}
+
+        {show('team') && (
+          <Panel>
+            <PanelHead title="Team" description="Members and their roles." />
+            <MiniTable<TeamMember>
+              columns={teamColumns}
+              data={team}
+              rowKey={(m) => m.id}
+            />
+          </Panel>
+        )}
+
+        {show('notifications') && (
+          <Panel>
+            <PanelHead
+              title="Notifications"
+              description="Choose what we ping you about."
+            />
+            <Stack gap="sm">
+              {notifications.map((n: NotificationPref) => (
+                <Label
+                  key={n.id}
+                  htmlFor={`notif-${n.id}`}
+                  className="items-start gap-3"
+                >
+                  <Checkbox
+                    id={`notif-${n.id}`}
+                    checked={notifs[n.id] ?? false}
+                    onCheckedChange={(v) =>
+                      setNotifs((prev) => ({ ...prev, [n.id]: v === true }))
+                    }
+                    className="mt-0.5"
+                  />
+                  <span className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium">{n.label}</span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {n.description}
+                    </span>
+                  </span>
+                </Label>
+              ))}
+            </Stack>
+          </Panel>
+        )}
+      </div>
     </div>
   );
 }

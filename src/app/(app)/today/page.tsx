@@ -1,6 +1,12 @@
 'use client';
 
-import { AIReplyDraft, MockAIProvider } from '@/components/ai';
+import * as React from 'react';
+import {
+  AIReplyDraft,
+  DraftStatus,
+  MockAIProvider,
+  type DraftResolution,
+} from '@/components/ai';
 import {
   Btn,
   Grid,
@@ -12,6 +18,42 @@ import {
 } from '@/components/primitives';
 import { PageError, PageLoading } from '@/components/shell/page-state';
 import { useToday } from '@/hooks/use-today';
+import type { TodayAiAction } from '@/types/today';
+
+/** One AI action tile that the owner can approve, edit, or reject. */
+function AiActionTile({ action }: { action: TodayAiAction }) {
+  const [resolution, setResolution] = React.useState<DraftResolution | null>(
+    null,
+  );
+
+  if (resolution) {
+    return (
+      <Panel>
+        <PanelHead>
+          <h3 className="font-heading text-base leading-snug font-medium">
+            {action.title}
+          </h3>
+        </PanelHead>
+        <DraftStatus
+          resolution={resolution}
+          onUndo={() => setResolution(null)}
+        />
+      </Panel>
+    );
+  }
+
+  return (
+    <MockAIProvider tokens={[action.draft]} delay={0}>
+      <AIReplyDraft
+        title={action.title}
+        prompt={action.prompt}
+        confidence={action.confidence}
+        onApprove={() => setResolution('approved')}
+        onReject={() => setResolution('rejected')}
+      />
+    </MockAIProvider>
+  );
+}
 
 export default function TodayPage() {
   const { data, isLoading, isError } = useToday();
@@ -65,13 +107,7 @@ export default function TodayPage() {
           />
           <div className="flex flex-col gap-3">
             {today.aiActions.map((a) => (
-              <MockAIProvider key={a.id} tokens={[a.draft]} delay={0}>
-                <AIReplyDraft
-                  title={a.title}
-                  prompt={a.prompt}
-                  confidence={a.confidence}
-                />
-              </MockAIProvider>
+              <AiActionTile key={a.id} action={a} />
             ))}
           </div>
         </Panel>

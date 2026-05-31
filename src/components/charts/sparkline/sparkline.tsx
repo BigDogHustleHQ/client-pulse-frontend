@@ -35,7 +35,11 @@ function Sparkline({
       <div
         data-slot="sparkline"
         aria-hidden="true"
-        className={cn('inline-block rounded-sm bg-muted/50', className)}
+        className={cn(
+          'inline-block rounded-sm bg-muted/50',
+          'animate-in fade-in-0 duration-500 motion-reduce:animate-none',
+          className,
+        )}
         style={{ width, height }}
         {...props}
       />
@@ -45,7 +49,11 @@ function Sparkline({
   return (
     <div
       data-slot="sparkline"
-      className={cn('inline-block', className)}
+      className={cn(
+        'inline-block',
+        'animate-in fade-in-0 duration-500 motion-reduce:animate-none',
+        className,
+      )}
       style={{ width, height }}
       {...props}
     >

@@ -20,7 +20,7 @@ function Dropzone({ id, children, className, ...props }: DropzoneProps) {
       data-slot="dropzone"
       data-over={isOver || undefined}
       className={cn(
-        'flex flex-col gap-2 rounded-xl border border-border p-3 transition-colors',
+        'flex flex-col gap-2 rounded-xl border border-border p-3 transition-colors duration-200 ease-out motion-reduce:transition-none',
         isOver && 'border-2 border-dashed border-brand bg-brand/15',
         className,
       )}

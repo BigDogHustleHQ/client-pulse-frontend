@@ -52,7 +52,7 @@ function ModeTabs({
             aria-selected={selected}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+              'rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] motion-reduce:transition-none motion-reduce:transform-none',
               selected
                 ? 'bg-card text-foreground ring-1 ring-foreground/10'
                 : 'text-muted-foreground hover:text-foreground',
@@ -212,9 +212,18 @@ export default function WebsitePage() {
 
       <div className="flex flex-col gap-3">
         <h3 className="font-heading text-lg font-medium">Variations</h3>
-        <Grid cols={3} gap="md" className="max-lg:grid-cols-1">
+        <Grid
+          key={mode}
+          cols={3}
+          gap="md"
+          className="max-lg:grid-cols-1 animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
+        >
           {site.variations.map((variation) => (
-            <Card key={variation.id} size="sm">
+            <Card
+              key={variation.id}
+              size="sm"
+              className="transition-all hover:-translate-y-px hover:shadow-sm motion-reduce:transition-none motion-reduce:transform-none"
+            >
               <CardContent className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <Pill tone={variation.recommended ? 'brand' : 'neutral'}>
