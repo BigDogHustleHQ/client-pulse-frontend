@@ -143,18 +143,22 @@ test.describe('Today page', () => {
     await expect(first.getByRole('button', { name: 'Approve' })).toBeVisible();
   });
 
-  test('shortcut buttons render (deferred placeholders)', async ({ page }) => {
+  test('shortcut buttons navigate to their product routes', async ({
+    page,
+  }) => {
     await gotoPage(page, 'today');
 
-    for (const label of [
-      '+ New post',
-      '+ Reservation',
-      'Ask AI',
-      'Generate site',
-    ]) {
-      await expect(
-        page.getByRole('button', { name: label, exact: true }),
-      ).toBeVisible();
-    }
+    // "+ New post" → Social Studio.
+    await page.getByRole('button', { name: '+ New post', exact: true }).click();
+    await expect(page).toHaveURL(/\/social$/);
+    await expect(topBarHeading(page)).toHaveText('Social Studio');
+
+    // Back to Today, then "+ Reservation" → Reservations.
+    await gotoPage(page, 'today');
+    await page
+      .getByRole('button', { name: '+ Reservation', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/reservations$/);
+    await expect(topBarHeading(page)).toHaveText('Reservations');
   });
 });

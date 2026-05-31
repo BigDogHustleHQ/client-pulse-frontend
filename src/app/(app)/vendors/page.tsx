@@ -18,6 +18,17 @@ import { DragDropProvider, Draggable, Dropzone } from '@/components/dnd';
 import { Btn, Panel, PanelHead, Pill } from '@/components/primitives';
 import { PageError, PageLoading } from '@/components/shell/page-state';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useVendors } from '@/hooks/use-vendors';
 import type {
   Vendor,
@@ -157,6 +168,113 @@ function KanbanBoard({
   );
 }
 
+function AddVendorDialog({
+  open,
+  onOpenChange,
+  onAdd,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAdd: (vendor: { name: string; poc: string; price: string }) => void;
+}) {
+  const [name, setName] = React.useState('');
+  const [poc, setPoc] = React.useState('');
+  const [price, setPrice] = React.useState('');
+
+  // Reset the form whenever the dialog opens so a prior draft never lingers.
+  const [prevOpen, setPrevOpen] = React.useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setName('');
+      setPoc('');
+      setPrice('');
+    }
+  }
+
+  const trimmedName = name.trim();
+  const canSubmit = trimmedName.length > 0;
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!canSubmit) return;
+    onAdd({
+      name: trimmedName,
+      poc: poc.trim(),
+      price: price.trim(),
+    });
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add vendor</DialogTitle>
+          <DialogDescription>
+            New vendors join the Leads lane so you can start outreach.
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          id="add-vendor-form"
+          className="flex flex-col gap-3"
+          onSubmit={handleSubmit}
+        >
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vendor-name">Vendor name</Label>
+            <Input
+              id="vendor-name"
+              name="name"
+              value={name}
+              autoFocus
+              autoComplete="off"
+              placeholder="e.g. Meadow Dairy"
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vendor-poc">Point of contact</Label>
+            <Input
+              id="vendor-poc"
+              name="poc"
+              value={poc}
+              autoComplete="off"
+              placeholder="Optional, e.g. Jordan Lee"
+              onChange={(e) => setPoc(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vendor-price">Price</Label>
+            <Input
+              id="vendor-price"
+              name="price"
+              value={price}
+              autoComplete="off"
+              placeholder="Optional, e.g. $5.10/lb"
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+        </form>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Btn variant="outline" size="sm">
+              Cancel
+            </Btn>
+          </DialogClose>
+          <Btn
+            type="submit"
+            form="add-vendor-form"
+            size="sm"
+            disabled={!canSubmit}
+          >
+            Add vendor
+          </Btn>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 const LANE_IDS: VendorLaneId[] = ['leads', 'contacted', 'quoted', 'signed'];
 const isLaneId = (id: string): id is VendorLaneId =>
   (LANE_IDS as string[]).includes(id);
@@ -171,6 +289,7 @@ export default function VendorsPage() {
     null,
   );
   const [prevDraftText, setPrevDraftText] = React.useState<string | null>(null);
+  const [addOpen, setAddOpen] = React.useState(false);
 
   // Seed local board state from the endpoint without an effect: when a fresh
   // payload arrives, sync during render (the pattern ApprovalBar uses).
@@ -231,6 +350,22 @@ export default function VendorsPage() {
     });
   }
 
+  function handleAddVendor(input: {
+    name: string;
+    poc: string;
+    price: string;
+  }) {
+    const newVendor: Vendor = {
+      id: `local-${Date.now()}`,
+      lane: 'leads',
+      name: input.name,
+      status: 'new',
+      ...(input.poc ? { poc: input.poc } : {}),
+      ...(input.price ? { price: input.price } : {}),
+    };
+    setVendors((prev) => [...prev, newVendor]);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
@@ -243,8 +378,16 @@ export default function VendorsPage() {
             cards across lanes
           </p>
         </div>
-        <Btn size="sm">+ Add vendor</Btn>
+        <Btn size="sm" onClick={() => setAddOpen(true)}>
+          + Add vendor
+        </Btn>
       </div>
+
+      <AddVendorDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onAdd={handleAddVendor}
+      />
 
       <KanbanBoard
         lanes={lanes}

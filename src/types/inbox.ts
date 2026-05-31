@@ -9,6 +9,10 @@ export type InboxChannel = {
   tone: string;
   /** Whether high-confidence drafts may auto-send on this channel. */
   autoSend: boolean;
+  /** Representative inbound message for this channel, opened in the Thread. */
+  message: InboxMessage;
+  /** AI-drafted reply for this channel's representative message. */
+  reply: InboxReply;
 };
 
 export type InboxMessage = {
@@ -39,11 +43,15 @@ export type InboxReply = {
 
 export type InboxData = {
   channels: InboxChannel[];
-  /** The id of the currently selected channel. */
+  /** The id of the channel selected by default when the page first loads. */
   selectedChannelId: InboxChannelId;
-  /** The message thread currently open. */
+  /**
+   * The message thread open for the default selected channel. Mirrors the
+   * matching channel's `message` so consumers that read the top-level shape
+   * (and not yet the per-channel data) keep working.
+   */
   selectedMessage: InboxMessage;
-  /** AI-drafted reply for the selected message. */
+  /** AI-drafted reply for the default selected message. */
   reply: InboxReply;
   /** Confidence threshold (0..1) below which an owner must review. */
   threshold: number;

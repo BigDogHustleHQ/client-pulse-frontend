@@ -204,7 +204,7 @@ export default function SettingsPage() {
             <Grid
               cols={3}
               gap="md"
-              className="max-lg:grid-cols-2 max-sm:grid-cols-1"
+              className="max-lg:grid-cols-2! max-sm:grid-cols-1!"
             >
               {integrations.map((i) => (
                 <IntegrationCard
@@ -281,7 +281,7 @@ export default function SettingsPage() {
               description="Cap monthly AI spend by plan."
             />
             <Stack gap="md">
-              <Grid cols={4} gap="sm" className="max-sm:grid-cols-2">
+              <Grid cols={4} gap="sm" className="max-sm:grid-cols-2!">
                 {budget.tiers.map((t) => {
                   const selected = selectedTier === t.id;
                   return (
@@ -322,11 +322,13 @@ export default function SettingsPage() {
         {show('team') && (
           <Panel>
             <PanelHead title="Team" description="Members and their roles." />
-            <MiniTable<TeamMember>
-              columns={teamColumns}
-              data={team}
-              rowKey={(m) => m.id}
-            />
+            <div className="overflow-x-auto">
+              <MiniTable<TeamMember>
+                columns={teamColumns}
+                data={team}
+                rowKey={(m) => m.id}
+              />
+            </div>
           </Panel>
         )}
 

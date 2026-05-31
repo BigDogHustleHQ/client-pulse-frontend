@@ -40,7 +40,7 @@ function ModeTabs({
     <div
       role="tablist"
       aria-label="Builder mode"
-      className="inline-flex gap-1 rounded-lg bg-secondary p-1"
+      className="inline-flex max-w-full gap-1 overflow-x-auto rounded-lg bg-secondary p-1"
     >
       {tabs.map((tab) => {
         const selected = tab.id === active;
@@ -216,7 +216,7 @@ export default function WebsitePage() {
           key={mode}
           cols={3}
           gap="md"
-          className="max-lg:grid-cols-1 animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
+          className="max-lg:grid-cols-1! animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
         >
           {site.variations.map((variation) => (
             <Card

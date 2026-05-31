@@ -125,6 +125,47 @@ test.describe('Social Studio page', () => {
     await expect(status).toContainText('Draft dismissed');
   });
 
+  test('"+ New post" opens a dialog, creates a post in an empty cell, and selects it', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'social');
+
+    // The calendar starts with the 10 seeded posts; every post is a draggable.
+    const cards = page.locator('[data-slot="draggable"]');
+    await expect(cards).toHaveCount(10);
+
+    // Open the create dialog (no dialog exists until the button is clicked).
+    await expect(page.locator('[data-slot="new-post-dialog"]')).toHaveCount(0);
+    await page.getByRole('button', { name: '+ New post', exact: true }).click();
+
+    const dialog = page.locator('[data-slot="new-post-dialog"]');
+    await expect(dialog).toBeVisible();
+
+    // Fill the form: instagram, a unique caption, into Sat / Afternoon — an
+    // empty cell in the seeded data (no post targets sat).
+    const NEW_CAPTION = 'Weekend brunch pop-up — bottomless mimosas 🥂';
+    await dialog.getByLabel('Platform').selectOption('instagram');
+    await dialog.getByLabel('Caption').fill(NEW_CAPTION);
+    await dialog.getByLabel('Day').selectOption('sat');
+    await dialog.getByLabel('Time').selectOption('afternoon');
+
+    await dialog.getByRole('button', { name: 'Add post' }).click();
+
+    // The dialog closes and the new post appears on the calendar.
+    await expect(page.locator('[data-slot="new-post-dialog"]')).toHaveCount(0);
+    await expect(cards).toHaveCount(11);
+
+    const newCard = page
+      .locator('[data-slot="draggable"]')
+      .filter({ hasText: NEW_CAPTION });
+    await expect(newCard).toBeVisible();
+    // It is auto-selected on create: it carries the ring and drives the panel.
+    await expect(newCard.locator('.ring-brand')).toBeVisible();
+    await expect(
+      selectedPanel(page).locator('[data-slot="panel-head"]'),
+    ).toContainText('Selected post — Afternoon Sat');
+  });
+
   test('keyboard drag reschedules a post without crashing (covers reorder)', async ({
     page,
   }) => {

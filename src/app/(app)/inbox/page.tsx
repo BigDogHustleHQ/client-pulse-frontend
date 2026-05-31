@@ -21,15 +21,32 @@ import {
 } from '@/components/primitives';
 import { PageError, PageLoading } from '@/components/shell/page-state';
 import { useInbox } from '@/hooks/use-inbox';
-import type { InboxChannel, InboxData } from '@/types/inbox';
+import type { InboxChannel, InboxChannelId, InboxData } from '@/types/inbox';
 
 export default function InboxPage() {
   const { data, isLoading, isError } = useInbox();
 
-  if (isLoading) return <PageLoading label="Loading your inbox…" />;
-  if (isError || !data) return <PageError message="Couldn't load Inbox." />;
+  const inbox = data?.data;
 
-  const inbox = data.data;
+  // Hold the selected channel in local state, seeded from the mock. Sync during
+  // render when a fresh payload arrives (the pattern vendors/page.tsx uses) so
+  // the default selected channel survives without a flicker effect.
+  const seededId = inbox?.selectedChannelId;
+  const [selectedChannelId, setSelectedChannelId] =
+    React.useState<InboxChannelId | null>(seededId ?? null);
+  const [prevSeededId, setPrevSeededId] = React.useState(seededId);
+  if (seededId && seededId !== prevSeededId) {
+    setPrevSeededId(seededId);
+    setSelectedChannelId(seededId);
+  }
+
+  if (isLoading) return <PageLoading label="Loading your inbox…" />;
+  if (isError || !inbox) return <PageError message="Couldn't load Inbox." />;
+
+  const selectedChannel =
+    inbox.channels.find((c) => c.id === selectedChannelId) ??
+    inbox.channels.find((c) => c.id === inbox.selectedChannelId) ??
+    inbox.channels[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,16 +61,32 @@ export default function InboxPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <ChannelList inbox={inbox} />
+        <ChannelList
+          inbox={inbox}
+          selectedChannelId={selectedChannel.id}
+          onSelect={setSelectedChannelId}
+        />
         <div className="lg:col-span-2">
-          <Thread inbox={inbox} />
+          <Thread
+            key={selectedChannel.id}
+            channel={selectedChannel}
+            threshold={inbox.threshold}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function ChannelList({ inbox }: { inbox: InboxData }) {
+function ChannelList({
+  inbox,
+  selectedChannelId,
+  onSelect,
+}: {
+  inbox: InboxData;
+  selectedChannelId: InboxChannelId;
+  onSelect: (id: InboxChannelId) => void;
+}) {
   const columns: MiniTableColumn<InboxChannel>[] = [
     {
       key: 'label',
@@ -61,7 +94,7 @@ function ChannelList({ inbox }: { inbox: InboxData }) {
       render: (c) => (
         <span
           className={
-            c.id === inbox.selectedChannelId
+            c.id === selectedChannelId
               ? 'font-medium text-brand'
               : 'text-foreground'
           }
@@ -81,7 +114,7 @@ function ChannelList({ inbox }: { inbox: InboxData }) {
       align: 'right',
       render: (c) => (
         <Badge
-          tone={c.id === inbox.selectedChannelId ? 'brand' : 'neutral'}
+          tone={c.id === selectedChannelId ? 'brand' : 'neutral'}
           count={c.count}
         />
       ),
@@ -95,16 +128,23 @@ function ChannelList({ inbox }: { inbox: InboxData }) {
         columns={columns}
         data={inbox.channels}
         rowKey={(c) => c.id}
+        onRowClick={(c) => onSelect(c.id)}
+        isRowSelected={(c) => c.id === selectedChannelId}
         empty="No channels"
       />
     </Panel>
   );
 }
 
-function Thread({ inbox }: { inbox: InboxData }) {
-  const msg = inbox.selectedMessage;
-  const { reply, threshold } = inbox;
-  const channel = inbox.channels.find((c) => c.id === msg.channelId);
+function Thread({
+  channel,
+  threshold,
+}: {
+  channel: InboxChannel;
+  threshold: number;
+}) {
+  const msg = channel.message;
+  const reply = channel.reply;
 
   const [tone, setTone] = React.useState(50);
   const [resolution, setResolution] = React.useState<DraftResolution | null>(
@@ -112,7 +152,7 @@ function Thread({ inbox }: { inbox: InboxData }) {
   );
 
   const belowThreshold = reply.confidence < threshold;
-  const canAutoSend = !belowThreshold && Boolean(channel?.autoSend);
+  const canAutoSend = !belowThreshold && Boolean(channel.autoSend);
 
   return (
     <Stack gap="md">
@@ -186,13 +226,13 @@ function Thread({ inbox }: { inbox: InboxData }) {
             ) : canAutoSend ? (
               <>
                 Above the {Math.round(threshold * 100)}% threshold and{' '}
-                {channel?.label} allows auto-send — this reply can send
+                {channel.label} allows auto-send — this reply can send
                 automatically.
               </>
             ) : (
               <>
                 Above the {Math.round(threshold * 100)}% threshold, but{' '}
-                {channel?.label} requires manual approval.
+                {channel.label} requires manual approval.
               </>
             )}
           </p>

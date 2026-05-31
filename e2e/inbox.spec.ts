@@ -1,13 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { gotoPage } from './helpers';
 
-// Inbox is already wired (Thread + ToneSlider + AIReplyDraft + DraftStatus).
-// All assertion values below are pinned to the deterministic mock at
-// src/app/api/mock/inbox/route.ts (confidence 0.78, threshold 0.8, Google
-// channel selected). We only assert real, observable behavior.
+// Inbox is wired (selectable Channels -> Thread + ToneSlider + AIReplyDraft +
+// DraftStatus). All assertion values below are pinned to the deterministic mock
+// at src/app/api/mock/inbox/route.ts. The default selected channel is Google
+// (sender "Jordan P.", confidence 0.78, threshold 0.8 -> below threshold). Each
+// channel carries its own message + reply + confidence. We only assert real,
+// observable behavior.
 
 const DRAFT_TEXT =
   "Hi Jordan, thanks for the kind words — sorry about Friday's wait. We've added staff for weekends so your next visit is smoother. Hope to see you again soon!";
+
+// The Yelp channel's deterministic representative message + reply.
+const YELP_SENDER = 'Priya N.';
+const YELP_DRAFT_TEXT =
+  "Priya, this made our whole kitchen smile — thank you! The shakshuka is the chef's pride, so we're thrilled it was worth the drive. Brunch is on us next time you're in.";
 
 test.describe('Inbox', () => {
   test.beforeEach(async ({ page }) => {
@@ -123,5 +130,64 @@ test.describe('Inbox', () => {
         'Below the 80% threshold — this draft needs owner review before it can be sent.',
       ),
     ).toBeVisible();
+  });
+
+  test('clicking a different channel swaps the Thread message + reply', async ({
+    page,
+  }) => {
+    const draft = page.locator('[data-slot="ai-reply-draft"]');
+    const body = draft.locator('[data-slot="ai-reply-draft-body"]');
+    const confidence = draft.locator('[data-slot="ai-reply-draft-confidence"]');
+
+    // Default selected channel is Google: Jordan P., 78% confident.
+    await expect(
+      page.getByRole('heading', { name: 'Jordan P.' }),
+    ).toBeVisible();
+    await expect(body).toHaveText(DRAFT_TEXT);
+    await expect(confidence).toHaveText('78% confident');
+
+    // Click the Yelp channel row in the Channels panel.
+    const channels = page
+      .locator('[data-slot="panel"]', { hasText: 'Channels' })
+      .first();
+    await channels.getByRole('button', { name: /Yelp/ }).click();
+
+    // The Thread now shows the Yelp channel's deterministic content.
+    await expect(
+      page.getByRole('heading', { name: YELP_SENDER }),
+    ).toBeVisible();
+    await expect(body).toHaveText(YELP_DRAFT_TEXT);
+    // Yelp confidence 0.94 -> 94%, above the 0.8 threshold.
+    await expect(confidence).toHaveText('94% confident');
+    await expect(
+      page.getByText(
+        'Above the 80% threshold and Yelp allows auto-send — this reply can send automatically.',
+      ),
+    ).toBeVisible();
+
+    // The previous Google content is gone.
+    await expect(page.getByRole('heading', { name: 'Jordan P.' })).toBeHidden();
+  });
+
+  test('selecting a channel via keyboard (Enter) swaps the Thread', async ({
+    page,
+  }) => {
+    const channels = page
+      .locator('[data-slot="panel"]', { hasText: 'Channels' })
+      .first();
+    const yelpRow = channels.getByRole('button', { name: /Yelp/ });
+
+    // The row is focusable and keyboard-activatable.
+    await yelpRow.focus();
+    await expect(yelpRow).toBeFocused();
+    await page.keyboard.press('Enter');
+
+    const body = page.locator(
+      '[data-slot="ai-reply-draft"] [data-slot="ai-reply-draft-body"]',
+    );
+    await expect(
+      page.getByRole('heading', { name: YELP_SENDER }),
+    ).toBeVisible();
+    await expect(body).toHaveText(YELP_DRAFT_TEXT);
   });
 });

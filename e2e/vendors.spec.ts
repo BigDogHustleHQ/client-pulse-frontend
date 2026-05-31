@@ -113,6 +113,49 @@ test.describe('Vendors', () => {
     await expect(draft.getByRole('button', { name: 'Approve' })).toBeVisible();
   });
 
+  test('"+ Add vendor" opens a dialog, submitting adds a card to the Leads lane', async ({
+    page,
+  }) => {
+    const lanes = page.locator('[data-slot="dropzone"]');
+    const leads = lanes.filter({ hasText: 'Leads' }).first();
+
+    // The Leads lane seeds two cards from the mock (Burrata Co., Fresh Bros).
+    const leadsCards = leads.locator('[data-slot="draggable"]');
+    await expect(leadsCards).toHaveCount(2);
+
+    // The "+ Add vendor" button opens the dialog (deferred placeholder no more).
+    await page.getByRole('button', { name: '+ Add vendor' }).click();
+
+    const dialog = page.locator('[data-slot="dialog-content"]');
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole('heading', { name: 'Add vendor' }),
+    ).toBeVisible();
+
+    // Fill the required name (POC/price optional) and submit via the footer.
+    const NEW_VENDOR = 'Meadow Dairy';
+    await dialog.getByLabel('Vendor name').fill(NEW_VENDOR);
+    await dialog.getByRole('button', { name: 'Add vendor' }).click();
+
+    // The dialog closes and a new card appears immediately in the Leads lane,
+    // bumping its count from 2 to 3.
+    await expect(dialog).toBeHidden();
+    await expect(leadsCards).toHaveCount(3);
+    await expect(leads.getByText(NEW_VENDOR, { exact: true })).toBeVisible();
+
+    // The new card is draggable: it exposes the same drag handle contract as
+    // the seeded cards, and (being a `leads` card) a "Draft email" button.
+    const newCard = leads
+      .locator('[data-slot="draggable"]', { hasText: NEW_VENDOR })
+      .first();
+    await expect(
+      newCard.getByRole('button', { name: `Drag ${NEW_VENDOR}` }),
+    ).toBeVisible();
+    await expect(
+      newCard.getByRole('button', { name: 'Draft email' }),
+    ).toBeVisible();
+  });
+
   test('keyboard dnd: drag handle is focusable and the board stays consistent', async ({
     page,
   }) => {

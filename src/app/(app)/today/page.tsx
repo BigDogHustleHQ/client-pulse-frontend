@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   AIReplyDraft,
   DraftStatus,
@@ -19,6 +20,15 @@ import {
 import { PageError, PageLoading } from '@/components/shell/page-state';
 import { useToday } from '@/hooks/use-today';
 import type { TodayAiAction } from '@/types/today';
+
+// Maps each Today shortcut (today.shortcuts ids from the mock) to the product
+// route it opens. Unknown ids fall through to no navigation.
+const SHORTCUT_ROUTES: Record<string, string> = {
+  post: '/social',
+  reservation: '/reservations',
+  ask: '/workflows',
+  site: '/website',
+};
 
 /** One AI action tile that the owner can approve, edit, or reject. */
 function AiActionTile({ action }: { action: TodayAiAction }) {
@@ -56,6 +66,7 @@ function AiActionTile({ action }: { action: TodayAiAction }) {
 }
 
 export default function TodayPage() {
+  const router = useRouter();
   const { data, isLoading, isError } = useToday();
 
   if (isLoading) return <PageLoading label="Loading your morning…" />;
@@ -75,15 +86,19 @@ export default function TodayPage() {
       </div>
 
       <Inline gap="sm">
-        {today.shortcuts.map((s) => (
-          <Btn
-            key={s.id}
-            variant={s.id === 'post' ? 'default' : 'secondary'}
-            size="sm"
-          >
-            {s.label}
-          </Btn>
-        ))}
+        {today.shortcuts.map((s) => {
+          const href = SHORTCUT_ROUTES[s.id];
+          return (
+            <Btn
+              key={s.id}
+              variant={s.id === 'post' ? 'default' : 'secondary'}
+              size="sm"
+              onClick={href ? () => router.push(href) : undefined}
+            >
+              {s.label}
+            </Btn>
+          );
+        })}
       </Inline>
 
       <Grid cols={4} gap="md" className="max-md:grid-cols-2">

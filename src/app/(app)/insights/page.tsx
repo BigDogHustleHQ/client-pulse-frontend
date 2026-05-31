@@ -82,7 +82,7 @@ export default function InsightsPage() {
         </Inline>
       </Panel>
 
-      <Grid cols={2} gap="md" className="max-lg:grid-cols-1">
+      <Grid cols={2} gap="md" className="max-lg:grid-cols-1!">
         <Panel>
           <PanelHead
             title="Customer growth"
@@ -144,11 +144,13 @@ export default function InsightsPage() {
             title="Competitive pricing"
             description="Your menu vs the local market"
           />
-          <MiniTable
-            columns={priceColumns}
-            data={insights.pricing}
-            rowKey={(row) => row.id}
-          />
+          <div className="overflow-x-auto">
+            <MiniTable
+              columns={priceColumns}
+              data={insights.pricing}
+              rowKey={(row) => row.id}
+            />
+          </div>
         </Panel>
 
         <Panel>

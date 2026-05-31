@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -8,9 +9,11 @@ import {
 import {
   Clock,
   GitBranch,
+  Plus,
   SendHorizontal,
   ShieldCheck,
   Sparkles,
+  X,
   Zap,
   type LucideIcon,
 } from 'lucide-react';
@@ -21,13 +24,14 @@ import {
   MockAIProvider,
   type DraftResolution,
 } from '@/components/ai';
-import { DragDropProvider, Draggable } from '@/components/dnd';
+import { DragDropProvider, Draggable, Dropzone } from '@/components/dnd';
 import { Btn, Panel, PanelHead, Pill, Stack } from '@/components/primitives';
 import { PageError, PageLoading } from '@/components/shell/page-state';
 import { useWorkflows } from '@/hooks/use-workflows';
 import type {
   WorkflowEdge,
   WorkflowNode,
+  WorkflowNodeKind,
   WorkflowPaletteNode,
 } from '@/types/workflows';
 
@@ -40,6 +44,45 @@ const ICONS: Record<string, LucideIcon> = {
   SendHorizontal,
   Clock,
 };
+
+// The droppable canvas surface. Dropping a palette item here appends a node.
+const CANVAS_DROPZONE_ID = 'canvas';
+
+// Resolve a node kind from a palette item's id (e.g. `pal-trigger` → `trigger`).
+const PALETTE_KIND: Record<string, WorkflowNodeKind> = {
+  'pal-trigger': 'trigger',
+  'pal-ai': 'ai',
+  'pal-condition': 'condition',
+  'pal-approval': 'approval',
+  'pal-send': 'send',
+  'pal-wait': 'wait',
+};
+
+// Monotonic counter so appended node/edge ids stay unique across the session.
+let nodeSeq = 0;
+
+/**
+ * Build a fresh canvas node from a palette item. Approval nodes get a draft so
+ * the ApprovalBar lifecycle works on newly-added gates too.
+ */
+function nodeFromPalette(item: WorkflowPaletteNode): WorkflowNode {
+  nodeSeq += 1;
+  const kind = PALETTE_KIND[item.id] ?? 'ai';
+  return {
+    id: `n-${item.id}-${nodeSeq}`,
+    kind,
+    title: item.label,
+    detail: item.hint,
+    tag: item.tag,
+    tagTone: item.tagTone,
+    ...(kind === 'approval'
+      ? {
+          approvalDraft:
+            'Drafted reply pending your sign-off — review and approve to send.',
+        }
+      : {}),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Co-located builder canvas. Renders the static graph supplied by the endpoint:
@@ -87,7 +130,13 @@ function nodeCenter(slot: { col: number; row: number }) {
   return { x, y };
 }
 
-function CanvasNode({ node }: { node: WorkflowNode }) {
+function CanvasNode({
+  node,
+  onRemove,
+}: {
+  node: WorkflowNode;
+  onRemove?: (id: string) => void;
+}) {
   const isApproval = node.kind === 'approval';
   const [resolution, setResolution] = React.useState<DraftResolution | null>(
     null,
@@ -97,14 +146,26 @@ function CanvasNode({ node }: { node: WorkflowNode }) {
     <div
       data-slot="workflow-node"
       style={{ width: NODE_W }}
-      className="flex flex-col gap-2 rounded-xl bg-card p-3 text-card-foreground ring-1 ring-foreground/10 animate-in fade-in-0 duration-300 motion-reduce:animate-none"
+      className="group flex flex-col gap-2 rounded-xl bg-card p-3 text-card-foreground ring-1 ring-foreground/10 animate-in fade-in-0 duration-300 motion-reduce:animate-none"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-medium leading-snug">{node.title}</span>
           <span className="text-xs text-muted-foreground">{node.detail}</span>
         </div>
-        {node.tag && <Pill tone={node.tagTone}>{node.tag}</Pill>}
+        <div className="flex items-center gap-1">
+          {node.tag && <Pill tone={node.tagTone}>{node.tag}</Pill>}
+          {onRemove && (
+            <button
+              type="button"
+              aria-label={`Remove ${node.title}`}
+              onClick={() => onRemove(node.id)}
+              className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 motion-reduce:transition-none"
+            >
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+          )}
+        </div>
       </div>
       {isApproval &&
         node.approvalDraft &&
@@ -127,9 +188,11 @@ function CanvasNode({ node }: { node: WorkflowNode }) {
 function WorkflowCanvas({
   nodes,
   edges,
+  onRemove,
 }: {
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
+  onRemove?: (id: string) => void;
 }) {
   const slots = React.useMemo(() => layout(nodes), [nodes]);
 
@@ -139,7 +202,11 @@ function WorkflowCanvas({
   const height = rows * NODE_H + (rows - 1) * ROW_GAP;
 
   return (
-    <div className="relative mx-auto" style={{ width, height }}>
+    <Dropzone
+      id={CANVAS_DROPZONE_ID}
+      className="relative mx-auto border-transparent p-0"
+      style={{ width, height }}
+    >
       <svg
         className="pointer-events-none absolute inset-0 text-border"
         width={width}
@@ -187,15 +254,21 @@ function WorkflowCanvas({
         const top = slot.row * (NODE_H + ROW_GAP);
         return (
           <div key={node.id} className="absolute" style={{ left, top }}>
-            <CanvasNode node={node} />
+            <CanvasNode node={node} onRemove={onRemove} />
           </div>
         );
       })}
-    </div>
+    </Dropzone>
   );
 }
 
-function PaletteItem({ node }: { node: WorkflowPaletteNode }) {
+function PaletteItem({
+  node,
+  onAdd,
+}: {
+  node: WorkflowPaletteNode;
+  onAdd: (node: WorkflowPaletteNode) => void;
+}) {
   const Icon = ICONS[node.icon] ?? Sparkles;
   return (
     <Draggable id={node.id}>
@@ -217,6 +290,14 @@ function PaletteItem({ node }: { node: WorkflowPaletteNode }) {
             </span>
           </div>
           <Pill tone={node.tagTone}>{node.tag}</Pill>
+          <button
+            type="button"
+            aria-label={`Add ${node.label}`}
+            onClick={() => onAdd(node)}
+            className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground motion-reduce:transition-none"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+          </button>
         </>
       )}
     </Draggable>
@@ -225,6 +306,52 @@ function PaletteItem({ node }: { node: WorkflowPaletteNode }) {
 
 export default function WorkflowsPage() {
   const { data, isLoading, isError } = useWorkflows();
+
+  // Lift the canvas graph into local state so palette adds/removes mutate it.
+  const [nodes, setNodes] = React.useState<WorkflowNode[]>([]);
+  const [edges, setEdges] = React.useState<WorkflowEdge[]>([]);
+
+  // Seed local state from the endpoint without an effect: when a fresh payload
+  // arrives, sync during render (the render-time pattern used in vendors/page).
+  const seed = data?.data;
+  const [prevSeed, setPrevSeed] = React.useState(seed);
+  if (seed && seed !== prevSeed) {
+    setPrevSeed(seed);
+    setNodes(seed.nodes);
+    setEdges(seed.edges);
+  }
+
+  // Append a node from a palette item and connect it from the current last node.
+  const appendNode = React.useCallback((item: WorkflowPaletteNode) => {
+    const next = nodeFromPalette(item);
+    setNodes((prev) => {
+      const last = prev[prev.length - 1];
+      if (last) {
+        setEdges((prevEdges) => [
+          ...prevEdges,
+          { id: `e-${last.id}-${next.id}`, from: last.id, to: next.id },
+        ]);
+      }
+      return [...prev, next];
+    });
+  }, []);
+
+  // Remove a canvas node and any edges touching it.
+  const handleRemove = React.useCallback((id: string) => {
+    setNodes((prev) => prev.filter((n) => n.id !== id));
+    setEdges((prev) => prev.filter((e) => e.from !== id && e.to !== id));
+  }, []);
+
+  // Dropping a palette item onto the "canvas" dropzone appends its node too.
+  const handleDragEnd = React.useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || over.id !== CANVAS_DROPZONE_ID) return;
+      const item = data?.data.palette.find((p) => p.id === String(active.id));
+      if (item) appendNode(item);
+    },
+    [appendNode, data],
+  );
 
   if (isLoading) return <PageLoading label="Loading workflows…" />;
   if (isError || !data) return <PageError message="Couldn't load Workflows." />;
@@ -261,12 +388,12 @@ export default function WorkflowsPage() {
         </MockAIProvider>
       </Panel>
 
-      <DragDropProvider>
+      <DragDropProvider onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-[18rem_1fr] gap-6 max-lg:grid-cols-1">
           <Panel className="h-fit">
             <PanelHead
               title="Node palette"
-              description="Drag a node onto the canvas"
+              description="Drag a node onto the canvas, or tap + to add it"
             />
             <SortableContext
               items={wf.palette.map((p) => p.id)}
@@ -274,7 +401,7 @@ export default function WorkflowsPage() {
             >
               <Stack gap="sm">
                 {wf.palette.map((node) => (
-                  <PaletteItem key={node.id} node={node} />
+                  <PaletteItem key={node.id} node={node} onAdd={appendNode} />
                 ))}
               </Stack>
             </SortableContext>
@@ -286,7 +413,11 @@ export default function WorkflowsPage() {
               description="Nodes flow top-to-bottom · drag to connect"
             />
             <div className="py-4">
-              <WorkflowCanvas nodes={wf.nodes} edges={wf.edges} />
+              <WorkflowCanvas
+                nodes={nodes}
+                edges={edges}
+                onRemove={handleRemove}
+              />
             </div>
           </Panel>
         </div>

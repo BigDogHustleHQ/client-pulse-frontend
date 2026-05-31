@@ -3,8 +3,9 @@ import { gotoPage, topBarHeading, trackConsoleErrors } from './helpers';
 
 // Reservations is a read-only analytics dashboard. Every value asserted here is
 // deterministic — it comes straight from src/app/api/mock/reservations/route.ts.
-// No AI lifecycle to wire; the "+ Add booking" / "Auto-fill from waitlist"
-// buttons are intentional deferred placeholders and only need to render.
+// The read-only widgets (KPIs, funnel, donut, cohort) just render the mock.
+// "+ Add booking" is now wired: it opens a Dialog that appends a Held party to
+// the (local-state) waitlist. "Auto-fill from waitlist" stays a placeholder.
 test.describe('reservations: read-only dashboard', () => {
   test('loads the title and narrative from the mock', async ({ page }) => {
     await gotoPage(page, 'reservations');
@@ -123,13 +124,12 @@ test.describe('reservations: read-only dashboard', () => {
     await expect(grid).toContainText('62%');
   });
 
-  test('renders deferred placeholder actions and logs no console errors', async ({
-    page,
-  }) => {
+  test('renders actions and logs no console errors', async ({ page }) => {
     const errors = trackConsoleErrors(page);
     await gotoPage(page, 'reservations');
 
-    // These are intentional deferred placeholders — assert they merely render.
+    // "+ Add booking" is now interactive (covered by the dialog test below);
+    // "Auto-fill from waitlist" remains an intentional deferred placeholder.
     await expect(
       page.getByRole('button', { name: '+ Add booking' }),
     ).toBeVisible();
@@ -143,5 +143,46 @@ test.describe('reservations: read-only dashboard', () => {
       (e) => !e.includes('Failed to load resource'),
     );
     expect(appErrors).toEqual([]);
+  });
+
+  test('"+ Add booking" opens a dialog that appends a Held waitlist row', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'reservations');
+
+    const table = page.locator('[data-slot="mini-table"]');
+    await expect(table.locator('tbody tr')).toHaveCount(4);
+
+    // Open the dialog.
+    await page.getByRole('button', { name: '+ Add booking' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole('heading', { name: 'Add booking' }),
+    ).toBeVisible();
+
+    // Fill the small form: party name + party size (quoted wait optional).
+    await dialog.getByLabel('Party name').fill('Rivera');
+    await dialog.getByLabel('Party size').fill('5');
+    await dialog.getByLabel('Quoted wait').fill('9:15');
+
+    // Submit.
+    await dialog.getByRole('button', { name: 'Add to waitlist' }).click();
+
+    // Dialog closes and a new waitlist row appears with the party name…
+    await expect(dialog).toBeHidden();
+    const rows = table.locator('tbody tr');
+    await expect(rows).toHaveCount(5);
+
+    const newRow = rows.filter({ hasText: 'Rivera' });
+    await expect(newRow).toHaveCount(1);
+    await expect(newRow).toContainText('5');
+    await expect(newRow).toContainText('9:15');
+
+    // …and a Held status pill on that row.
+    const heldPill = newRow.locator('[data-slot="pill"]', {
+      hasText: 'Held',
+    });
+    await expect(heldPill).toHaveCount(1);
   });
 });

@@ -12,7 +12,7 @@ export function SideNav() {
     <nav
       data-slot="side-nav"
       aria-label="Primary"
-      className="flex h-full w-56 shrink-0 flex-col gap-1 border-r border-border bg-card px-3 py-4"
+      className="hidden h-full w-56 shrink-0 flex-col gap-1 border-r border-border bg-card px-3 py-4 lg:flex"
     >
       <Link href="/today" className="mb-4 flex items-center gap-2 px-2">
         <span className="grid size-7 place-content-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">

@@ -112,11 +112,31 @@ test.describe('Workflows page', () => {
     await gotoPage(page, 'workflows');
 
     for (const label of PALETTE_LABELS) {
-      // Each palette item exposes a "Drag <label>" handle (deferred dnd — no
-      // drag behavior is asserted, only that the handle renders).
+      // Each palette item exposes a "Drag <label>" handle and an "Add <label>"
+      // affordance. The drag handle drives pointer dnd; the Add button is the
+      // deterministic, touch-friendly path asserted in the test below.
       await expect(
         page.getByRole('button', { name: `Drag ${label}`, exact: true }),
       ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: `Add ${label}`, exact: true }),
+      ).toBeVisible();
     }
+  });
+
+  test('adding a palette node via the Add affordance grows the canvas by one', async ({
+    page,
+  }) => {
+    await gotoPage(page, 'workflows');
+
+    const nodes = page.locator('[data-slot="workflow-node"]');
+    await expect(nodes).toHaveCount(NODE_COUNT);
+
+    // Clicking the accessible "Add" control appends a new canvas node (no flaky
+    // pointer-dnd needed). The added node carries the palette label as its title.
+    await page.getByRole('button', { name: 'Add Wait', exact: true }).click();
+
+    await expect(nodes).toHaveCount(NODE_COUNT + 1);
+    await expect(nodes.filter({ hasText: 'Wait' })).toHaveCount(1);
   });
 });
