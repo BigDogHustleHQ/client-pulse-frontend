@@ -39,6 +39,29 @@ test.describe('shell: mobile drawer', () => {
     await expect(page.locator('[data-slot="mobile-nav"]')).toHaveCount(0);
   });
 
+  test('the /today KPI grid stacks to 2 columns at 390px', async ({ page }) => {
+    await page.goto('/today');
+    await expect(topBarHeading(page)).toHaveText('Today');
+
+    // The KPI grid renders cols={4} but carries className="max-md:grid-cols-2",
+    // which only wins now that Grid emits a static grid-cols-N class instead of
+    // an always-overriding inline gridTemplateColumns style. At 390px (< md) the
+    // max-md override applies, so the grid resolves to exactly 2 tracks.
+    const kpiGrid = page
+      .locator('[data-slot="grid"]')
+      .filter({ has: page.locator('[data-slot="kpi"]') })
+      .first();
+    await expect(kpiGrid).toBeVisible();
+
+    await expect
+      .poll(() =>
+        kpiGrid.evaluate(
+          (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length,
+        ),
+      )
+      .toBe(2);
+  });
+
   for (const item of NAV) {
     test(`${item.href} has no horizontal overflow at 390px`, async ({
       page,
