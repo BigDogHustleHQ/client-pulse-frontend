@@ -3,6 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import QueryProvider from '@/providers/QueryProvider';
 import { Geist_Mono } from 'next/font/google';
 import './globals.css';
+import '@/styles/auth.scss';
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',

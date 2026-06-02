@@ -21,6 +21,7 @@ const config: Config = {
     '!src/components/ui/**',
     '!src/lib/**',
     '!src/proxy.ts',
+    '!src/store/auth/types.ts',
   ],
   coverageThreshold: {
     global: {

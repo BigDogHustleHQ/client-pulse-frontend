@@ -6,6 +6,13 @@ const mockFinalize = jest.fn();
 const mockSSO = jest.fn();
 const mockPush = jest.fn();
 const mockSetUser = jest.fn();
+const mockPersistSession = jest.fn();
+const mockMarkTemporarySession = jest.fn();
+
+jest.mock('@/lib/clerk/session', () => ({
+  persistSession: (...args: unknown[]) => mockPersistSession(...args),
+  markTemporarySession: (...args: unknown[]) => mockMarkTemporarySession(...args),
+}));
 
 const mockSignIn = {
   status: 'complete' as string,
@@ -200,6 +207,47 @@ describe('LoginForm', () => {
         screen.getByRole('button', { name: 'Sign in to platform' }),
       ).toBeInTheDocument(),
     );
+  });
+
+  it('uses fallbacks when signIn fields are null', async () => {
+    mockSignIn.createdSessionId = null as unknown as string;
+    mockSignIn.identifier = null as unknown as string;
+    mockSignIn.userData = { firstName: null as unknown as string, lastName: null as unknown as string };
+
+    render(<LoginForm />);
+    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'fallback@co.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pw' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+
+    await waitFor(() => {
+      expect(mockSetUser).toHaveBeenCalledWith({
+        clerkId: '',
+        email: 'fallback@co.com',
+        firstName: null,
+        lastName: null,
+      });
+    });
+  });
+
+  it('calls persistSession when Remember Me is checked', async () => {
+    render(<LoginForm />);
+    fireEvent.click(screen.getByLabelText('Remember me'));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+
+    await waitFor(() => {
+      expect(mockPersistSession).toHaveBeenCalled();
+      expect(mockMarkTemporarySession).not.toHaveBeenCalled();
+    });
+  });
+
+  it('calls markTemporarySession when Remember Me is unchecked', async () => {
+    render(<LoginForm />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+
+    await waitFor(() => {
+      expect(mockMarkTemporarySession).toHaveBeenCalled();
+      expect(mockPersistSession).not.toHaveBeenCalled();
+    });
   });
 
   it('should call Google sign in on button click', async () => {

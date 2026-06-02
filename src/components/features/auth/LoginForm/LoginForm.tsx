@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/store';
+import { persistSession, markTemporarySession } from '@/lib/clerk/session';
 
 export default function LoginForm() {
   const { signIn, fetchStatus } = useSignIn();
@@ -46,13 +47,22 @@ export default function LoginForm() {
     if (signIn.status === 'complete') {
       await signIn.finalize();
 
+      if (rememberMe) {
+        persistSession();
+      } else {
+        markTemporarySession();
+      }
+
       setUser({
         clerkId: signIn.createdSessionId ?? '',
         email: signIn.identifier ?? email,
         firstName: signIn.userData.firstName ?? null,
         lastName: signIn.userData.lastName ?? null,
       });
+      setIsSubmitting(false);
+
       router.push('/dashboard');
+      return;
     }
 
     setIsSubmitting(false);
