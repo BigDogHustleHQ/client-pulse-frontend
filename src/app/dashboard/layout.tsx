@@ -1,7 +1,7 @@
 import SessionGuard from '@/components/SessionGuard';
 import UserSync from '@/components/UserSync';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <SessionGuard />
@@ -9,4 +9,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {children}
     </>
   );
-}
+};
+
+export default DashboardLayout;

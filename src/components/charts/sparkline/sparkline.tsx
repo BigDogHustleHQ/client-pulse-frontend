@@ -6,11 +6,11 @@ import { cn } from '@/lib/utils';
 
 export type SparkPoint = { x: number; y: number };
 
-function normalize(data: number[] | SparkPoint[]): SparkPoint[] {
+const normalize = (data: number[] | SparkPoint[]): SparkPoint[] => {
   return data.map((d, i) => (typeof d === 'number' ? { x: i, y: d } : d));
-}
+};
 
-function Sparkline({
+const Sparkline = ({
   data,
   width = 120,
   height = 32,
@@ -26,7 +26,7 @@ function Sparkline({
   color?: string;
   strokeWidth?: number;
   fill?: boolean;
-}) {
+}) => {
   const points = normalize(data);
   const gradientId = React.useId();
 
@@ -81,6 +81,6 @@ function Sparkline({
       </AreaChart>
     </div>
   );
-}
+};
 
 export { Sparkline };

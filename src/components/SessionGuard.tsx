@@ -5,7 +5,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { isSessionAuthorized, clearSessionMarkers } from '@/lib/clerk/session';
 
-export default function SessionGuard() {
+const SessionGuard = () => {
   const { isSignedIn, signOut } = useAuth();
   const router = useRouter();
 
@@ -19,4 +19,6 @@ export default function SessionGuard() {
   }, [isSignedIn, signOut, router]);
 
   return null;
-}
+};
+
+export default SessionGuard;

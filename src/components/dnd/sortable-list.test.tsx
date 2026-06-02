@@ -11,7 +11,7 @@ import { Draggable } from './draggable/draggable';
 // Mirrors the SortableList story: a vertical SortableContext of Draggable
 // items. jsdom cannot run pointer-based drag, so this verifies structure and
 // rendered order rather than a live reorder (covered by Storybook/Playwright).
-function SortableList({ items }: { items: string[] }) {
+const SortableList = ({ items }: { items: string[] }) => {
   return (
     <DragDropProvider>
       <SortableContext items={items} strategy={verticalListSortingStrategy}>
@@ -27,7 +27,7 @@ function SortableList({ items }: { items: string[] }) {
       </SortableContext>
     </DragDropProvider>
   );
-}
+};
 
 describe('SortableList', () => {
   const items = ['Covers', 'Reservations', 'Reviews', 'Orders'];

@@ -8,7 +8,7 @@ export type Cohort = {
   retention: (number | null | undefined)[];
 };
 
-function CohortGrid({
+const CohortGrid = ({
   cohorts,
   periods,
   periodLabel = (i) => `P${i}`,
@@ -19,7 +19,7 @@ function CohortGrid({
   /** Number of period columns. Defaults to the longest retention row. */
   periods?: number;
   periodLabel?: (i: number) => React.ReactNode;
-}) {
+}) => {
   const cols =
     periods ?? cohorts.reduce((acc, c) => Math.max(acc, c.retention.length), 0);
   const isEmpty = cohorts.length === 0 || cols === 0;
@@ -116,6 +116,6 @@ function CohortGrid({
       </table>
     </div>
   );
-}
+};
 
 export { CohortGrid };

@@ -6,13 +6,13 @@ import { MockAIProvider } from '../mock-ai-provider/mock-ai-provider';
 
 const TOKENS = ['Sure', ', ', 'happy ', 'to ', 'help', '.'];
 
-function renderComposer(ui = <ChatComposer />) {
+const renderComposer = (ui = <ChatComposer />) => {
   return render(
     <MockAIProvider tokens={TOKENS} delay={0}>
       {ui}
     </MockAIProvider>,
   );
-}
+};
 
 describe('ChatComposer', () => {
   it('streams the response after submitting', async () => {

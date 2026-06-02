@@ -2,6 +2,8 @@
 
 import { AuthenticateWithRedirectCallback } from '@clerk/nextjs';
 
-export default function SSOCallbackPage() {
+const SSOCallbackPage = () => {
   return <AuthenticateWithRedirectCallback />;
-}
+};
+
+export default SSOCallbackPage;

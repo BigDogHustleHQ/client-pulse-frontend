@@ -14,11 +14,11 @@ const DEFAULT_COLORS = [
   'var(--chart-5)',
 ];
 
-function colorAt(datum: DonutDatum, i: number): string {
+const colorAt = (datum: DonutDatum, i: number): string => {
   return datum.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-}
+};
 
-function Donut({
+const Donut = ({
   data,
   width = 220,
   height = 220,
@@ -39,7 +39,7 @@ function Donut({
   total?: number;
   totalLabel?: React.ReactNode;
   formatTotal?: (total: number) => React.ReactNode;
-}) {
+}) => {
   const positive = data.filter((d) => d.value > 0);
   const sum = total ?? data.reduce((acc, d) => acc + d.value, 0);
   const isEmpty = positive.length === 0;
@@ -119,6 +119,6 @@ function Donut({
       )}
     </div>
   );
-}
+};
 
 export { Donut };

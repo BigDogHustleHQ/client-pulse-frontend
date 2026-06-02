@@ -7,7 +7,7 @@ import {
 import { DragDropProvider } from '../drag-drop-provider/drag-drop-provider';
 import { Draggable } from './draggable';
 
-function renderInContext(ui: React.ReactNode, ids: string[]) {
+const renderInContext = (ui: React.ReactNode, ids: string[]) => {
   return render(
     <DragDropProvider>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -15,7 +15,7 @@ function renderInContext(ui: React.ReactNode, ids: string[]) {
       </SortableContext>
     </DragDropProvider>,
   );
-}
+};
 
 describe('Draggable', () => {
   it('renders its child content and a default handle', () => {

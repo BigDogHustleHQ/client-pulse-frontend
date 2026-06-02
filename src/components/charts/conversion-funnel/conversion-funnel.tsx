@@ -5,14 +5,7 @@ export type FunnelStage = { label: string; value: number };
 
 export type FunnelPercents = { ofFirst: number; ofPrevious: number };
 
-/**
- * Pure helper: for each stage compute its value as a percent of the first
- * stage (`ofFirst`) and as a percent of the previous stage (`ofPrevious`).
- *
- * The first stage is always 100/100. A zero denominator yields 0 to avoid
- * NaN/Infinity. Returns an empty array for empty input.
- */
-export function funnelPercents(stages: FunnelStage[]): FunnelPercents[] {
+export const funnelPercents = (stages: FunnelStage[]): FunnelPercents[] => {
   if (stages.length === 0) return [];
   const first = stages[0].value;
   return stages.map((stage, i) => {
@@ -22,19 +15,19 @@ export function funnelPercents(stages: FunnelStage[]): FunnelPercents[] {
       i === 0 ? 100 : prev === 0 ? 0 : (stage.value / prev) * 100;
     return { ofFirst, ofPrevious };
   });
-}
+};
 
-function formatPct(n: number): string {
+const formatPct = (n: number): string => {
   return `${Math.round(n)}%`;
-}
+};
 
-function ConversionFunnel({
+const ConversionFunnel = ({
   stages,
   className,
   ...props
 }: Omit<React.ComponentProps<'div'>, 'children'> & {
   stages: FunnelStage[];
-}) {
+}) => {
   const percents = funnelPercents(stages);
 
   if (stages.length === 0) {
@@ -105,6 +98,6 @@ function ConversionFunnel({
       })}
     </div>
   );
-}
+};
 
 export { ConversionFunnel };

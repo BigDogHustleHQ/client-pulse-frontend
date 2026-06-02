@@ -3,9 +3,9 @@ import { axe } from 'jest-axe';
 import { DragDropProvider } from '../drag-drop-provider/drag-drop-provider';
 import { Dropzone } from './dropzone';
 
-function renderInContext(ui: React.ReactNode) {
+const renderInContext = (ui: React.ReactNode) => {
   return render(<DragDropProvider>{ui}</DragDropProvider>);
-}
+};
 
 describe('Dropzone', () => {
   it('renders its children', () => {

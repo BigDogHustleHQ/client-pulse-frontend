@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-export default function Page(): ReactNode {
+const Page = (): ReactNode => {
   redirect('/login');
-}
+};
+
+export default Page;

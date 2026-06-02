@@ -8,7 +8,7 @@ type Column<T> = {
   render?: (row: T) => React.ReactNode;
 };
 
-function MiniTable<T extends Record<string, unknown>>({
+const MiniTable = <T extends Record<string, unknown>>({
   columns,
   data,
   rowKey,
@@ -30,7 +30,7 @@ function MiniTable<T extends Record<string, unknown>>({
   onRowClick?: (row: T, index: number) => void;
   /** Mark the active row (adds aria-selected + a selected style). */
   isRowSelected?: (row: T, index: number) => boolean;
-}) {
+}) => {
   const alignClass = (a?: Column<T>['align']) =>
     a === 'right' ? 'text-right' : a === 'center' ? 'text-center' : 'text-left';
 
@@ -112,7 +112,7 @@ function MiniTable<T extends Record<string, unknown>>({
       </tbody>
     </table>
   );
-}
+};
 
 export { MiniTable };
 export type { Column as MiniTableColumn };

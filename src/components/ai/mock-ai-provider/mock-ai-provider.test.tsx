@@ -1,15 +1,16 @@
 import { renderHook } from '@testing-library/react';
 import { MockAIProvider, useMockAI } from './mock-ai-provider';
 
-function wrapper(tokens: string[]) {
-  return function Wrapper({ children }: { children: React.ReactNode }) {
+const wrapper = (tokens: string[]) => {
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return (
       <MockAIProvider tokens={tokens} delay={0}>
         {children}
       </MockAIProvider>
     );
   };
-}
+  return Wrapper;
+};
 
 describe('MockAIProvider', () => {
   it('streams tokens in order', async () => {

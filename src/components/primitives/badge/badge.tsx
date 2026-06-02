@@ -21,7 +21,7 @@ const badgeVariants = cva(
   },
 );
 
-function Badge({
+const Badge = ({
   className,
   tone,
   size,
@@ -30,7 +30,7 @@ function Badge({
   children,
   ...props
 }: React.ComponentProps<'span'> &
-  VariantProps<typeof badgeVariants> & { count?: number; max?: number }) {
+  VariantProps<typeof badgeVariants> & { count?: number; max?: number }) => {
   const content =
     count === undefined ? children : count > max ? `${max}+` : count;
   return (
@@ -42,6 +42,6 @@ function Badge({
       {content}
     </span>
   );
-}
+};
 
 export { Badge, badgeVariants };

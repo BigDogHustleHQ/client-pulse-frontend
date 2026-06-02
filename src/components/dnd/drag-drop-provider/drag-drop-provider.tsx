@@ -15,11 +15,11 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 // inside this. Configures a PointerSensor (mouse/touch) and a KeyboardSensor
 // wired with sortableKeyboardCoordinates for accessible keyboard reordering
 // (space to lift, arrows to move, space to drop).
-function DragDropProvider({
+const DragDropProvider = ({
   children,
   sensors: sensorsProp,
   ...props
-}: DndContextProps) {
+}: DndContextProps) => {
   const defaultSensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -32,6 +32,6 @@ function DragDropProvider({
       {children}
     </DndContext>
   );
-}
+};
 
 export { DragDropProvider };

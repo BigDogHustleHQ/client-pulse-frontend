@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { gqlFetch } from '@/lib/api/graphql';
 import { GET_CURRENT_USER, type UserResponse } from '@/lib/api/queries';
 
-export function useCurrentUser() {
+export const useCurrentUser = () => {
   const { getToken, isSignedIn } = useAuth();
 
   return useQuery<UserResponse>({
@@ -14,4 +14,4 @@ export function useCurrentUser() {
     },
     enabled: !!isSignedIn,
   });
-}
+};

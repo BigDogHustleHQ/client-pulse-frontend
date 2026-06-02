@@ -10,12 +10,13 @@ import {
 } from '../approval-bar/approval-bar';
 import { useMockAI } from '../mock-ai-provider/mock-ai-provider';
 
-/** Pick a confidence Pill tone from a 0..1 score. */
-function confidenceTone(confidence: number): 'success' | 'warning' | 'danger' {
+const confidenceTone = (
+  confidence: number,
+): 'success' | 'warning' | 'danger' => {
   if (confidence >= 0.8) return 'success';
   if (confidence >= 0.5) return 'warning';
   return 'danger';
-}
+};
 
 export type AIReplyDraftProps = Omit<
   React.ComponentProps<'section'>,
@@ -34,7 +35,7 @@ export type AIReplyDraftProps = Omit<
   onReject?: ApprovalBarProps['onReject'];
 };
 
-function AIReplyDraft({
+const AIReplyDraft = ({
   prompt,
   confidence = 0.92,
   title = 'AI-drafted reply',
@@ -44,7 +45,7 @@ function AIReplyDraft({
   onReject,
   className,
   ...props
-}: AIReplyDraftProps) {
+}: AIReplyDraftProps) => {
   const { complete } = useMockAI();
   // Track which prompt the current draft belongs to so `loading` can be
   // derived rather than set synchronously inside the effect.
@@ -111,6 +112,6 @@ function AIReplyDraft({
       />
     </Panel>
   );
-}
+};
 
 export { AIReplyDraft, confidenceTone };

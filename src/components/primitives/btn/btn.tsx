@@ -9,13 +9,13 @@ type ButtonProps = React.ComponentProps<typeof Button>;
 
 // Thin wrapper over the shadcn Button adding a `loading` state with a spinner.
 // Named `Btn` to match the design-system inventory used across pages.
-function Btn({
+const Btn = ({
   loading = false,
   disabled,
   children,
   className,
   ...props
-}: ButtonProps & { loading?: boolean }) {
+}: ButtonProps & { loading?: boolean }) => {
   return (
     <Button
       data-slot="btn"
@@ -30,6 +30,6 @@ function Btn({
       {children}
     </Button>
   );
-}
+};
 
 export { Btn };

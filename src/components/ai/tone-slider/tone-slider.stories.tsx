@@ -19,10 +19,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Controlled(props: Partial<React.ComponentProps<typeof ToneSlider>>) {
+const Controlled = (
+  props: Partial<React.ComponentProps<typeof ToneSlider>>,
+) => {
   const [value, setValue] = React.useState(props.value ?? 50);
   return <ToneSlider {...props} value={value} onChange={setValue} />;
-}
+};
 
 export const Default: Story = {
   render: () => <Controlled />,

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthStore } from '@/store';
 
-export default function UserSync() {
+const UserSync = () => {
   const { data } = useCurrentUser();
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -16,4 +16,6 @@ export default function UserSync() {
   }, [data, setUser]);
 
   return null;
-}
+};
+
+export default UserSync;

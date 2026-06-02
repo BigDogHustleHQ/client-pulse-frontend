@@ -23,20 +23,19 @@ export type ToneSliderProps = Omit<
   label?: string;
 };
 
-/** Map a numeric value to the nearest tone label across the range. */
-function labelFor(
+const labelFor = (
   value: number,
   min: number,
   max: number,
   stops: readonly string[],
-) {
+) => {
   const span = max - min || 1;
   const ratio = Math.min(1, Math.max(0, (value - min) / span));
   const index = Math.round(ratio * (stops.length - 1));
   return stops[index];
-}
+};
 
-function ToneSlider({
+const ToneSlider = ({
   value,
   onChange,
   min = 0,
@@ -46,7 +45,7 @@ function ToneSlider({
   className,
   id,
   ...props
-}: ToneSliderProps) {
+}: ToneSliderProps) => {
   const reactId = React.useId();
   const inputId = id ?? reactId;
   const currentLabel = labelFor(value, min, max, stops);
@@ -90,6 +89,6 @@ function ToneSlider({
       </div>
     </div>
   );
-}
+};
 
 export { ToneSlider };

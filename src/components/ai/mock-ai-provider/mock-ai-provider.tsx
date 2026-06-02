@@ -15,8 +15,8 @@ export type MockAIConfig = {
 };
 
 export type MockAIContextValue = {
-  /** Async generator yielding the response token-by-token. */
-  stream: (prompt: string) => AsyncGenerator<string, void, unknown>;
+  /** Async iterable yielding the response token-by-token. */
+  stream: (prompt: string) => AsyncIterable<string>;
   /** Resolves with the full response in one shot. */
   complete: (prompt: string) => Promise<string>;
 };
@@ -37,32 +37,52 @@ const DEFAULT_TOKENS = [
 
 const MockAIContext = React.createContext<MockAIContextValue | null>(null);
 
-function wait(ms: number) {
+const wait = (ms: number) => {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
+};
 
 export type MockAIProviderProps = MockAIConfig & {
   children: React.ReactNode;
 };
 
-function MockAIProvider({ children, tokens, delay = 40 }: MockAIProviderProps) {
+const MockAIProvider = ({
+  children,
+  tokens,
+  delay = 40,
+}: MockAIProviderProps) => {
   const value = React.useMemo<MockAIContextValue>(() => {
     const resolvedTokens =
       tokens && tokens.length > 0 ? tokens : DEFAULT_TOKENS;
 
-    async function* stream(prompt: string) {
+    const stream = (prompt: string): AsyncIterable<string> => {
       void prompt;
-      for (const token of resolvedTokens) {
-        if (delay > 0) await wait(delay);
-        yield token;
-      }
-    }
+      return {
+        [Symbol.asyncIterator]: () => {
+          let index = 0;
 
-    async function complete(prompt: string) {
+          return {
+            next: async (): Promise<IteratorResult<string>> => {
+              if (index >= resolvedTokens.length) {
+                return { done: true, value: undefined };
+              }
+
+              if (delay > 0) await wait(delay);
+
+              const value = resolvedTokens[index];
+              index += 1;
+
+              return { done: false, value };
+            },
+          };
+        },
+      };
+    };
+
+    const complete = async (prompt: string) => {
       let out = '';
       for await (const token of stream(prompt)) out += token;
       return out;
-    }
+    };
 
     return { stream, complete };
   }, [tokens, delay]);
@@ -70,14 +90,14 @@ function MockAIProvider({ children, tokens, delay = 40 }: MockAIProviderProps) {
   return (
     <MockAIContext.Provider value={value}>{children}</MockAIContext.Provider>
   );
-}
+};
 
-function useMockAI(): MockAIContextValue {
+const useMockAI = (): MockAIContextValue => {
   const ctx = React.useContext(MockAIContext);
   if (!ctx) {
     throw new Error('useMockAI must be used within a <MockAIProvider>');
   }
   return ctx;
-}
+};
 
 export { MockAIProvider, useMockAI, MockAIContext };

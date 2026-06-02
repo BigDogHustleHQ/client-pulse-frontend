@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-function Panel({ className, ...props }: React.ComponentProps<'section'>) {
+const Panel = ({ className, ...props }: React.ComponentProps<'section'>) => {
   return (
     <section
       data-slot="panel"
@@ -13,9 +13,9 @@ function Panel({ className, ...props }: React.ComponentProps<'section'>) {
       {...props}
     />
   );
-}
+};
 
-function PanelHead({
+const PanelHead = ({
   title,
   description,
   actions,
@@ -26,7 +26,7 @@ function PanelHead({
   title?: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
-}) {
+}) => {
   return (
     <div
       data-slot="panel-head"
@@ -49,6 +49,6 @@ function PanelHead({
       )}
     </div>
   );
-}
+};
 
 export { Panel, PanelHead };

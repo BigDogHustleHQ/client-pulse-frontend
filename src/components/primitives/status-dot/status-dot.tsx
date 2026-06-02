@@ -16,7 +16,7 @@ const dotVariants = cva('inline-block size-2 shrink-0 rounded-full', {
   defaultVariants: { tone: 'neutral' },
 });
 
-function StatusDot({
+const StatusDot = ({
   className,
   tone,
   pulse = false,
@@ -26,7 +26,7 @@ function StatusDot({
   VariantProps<typeof dotVariants> & {
     pulse?: boolean;
     label?: React.ReactNode;
-  }) {
+  }) => {
   const dot = (
     <span className="relative inline-flex">
       <span className={cn(dotVariants({ tone }), className)} />
@@ -61,6 +61,6 @@ function StatusDot({
       <span>{label}</span>
     </span>
   );
-}
+};
 
 export { StatusDot, dotVariants };

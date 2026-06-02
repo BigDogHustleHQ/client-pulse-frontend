@@ -11,7 +11,7 @@ type DropzoneProps = Omit<React.ComponentProps<'div'>, 'id'> & {
 
 // Droppable container. Used both as a list container and for free-positioned
 // boards. Shows a dashed highlight hint while a draggable is over it.
-function Dropzone({ id, children, className, ...props }: DropzoneProps) {
+const Dropzone = ({ id, children, className, ...props }: DropzoneProps) => {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
@@ -29,7 +29,7 @@ function Dropzone({ id, children, className, ...props }: DropzoneProps) {
       {children}
     </div>
   );
-}
+};
 
 export { Dropzone };
 export type { DropzoneProps };

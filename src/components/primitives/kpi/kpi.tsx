@@ -4,12 +4,12 @@ import { cn } from '@/lib/utils';
 
 type Trend = 'up' | 'down' | 'flat';
 
-function trendFromDelta(delta?: number): Trend {
+const trendFromDelta = (delta?: number): Trend => {
   if (delta === undefined || delta === 0) return 'flat';
   return delta > 0 ? 'up' : 'down';
-}
+};
 
-function KPI({
+const KPI = ({
   label,
   value,
   delta,
@@ -25,7 +25,7 @@ function KPI({
   deltaLabel?: React.ReactNode;
   positiveIsGood?: boolean;
   icon?: React.ReactNode;
-}) {
+}) => {
   const trend = trendFromDelta(delta);
   const good = trend === 'flat' ? null : (trend === 'up') === positiveIsGood;
   const TrendIcon =
@@ -71,6 +71,6 @@ function KPI({
       )}
     </div>
   );
-}
+};
 
 export { KPI };

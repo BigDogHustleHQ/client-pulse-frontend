@@ -3,10 +3,10 @@ import RegistrationPage from './page';
 
 jest.mock(
   '@/components/features/auth/RegistrationForm/RegistrationForm',
-  () =>
-    function MockRegistrationForm() {
-      return <div>RegistrationForm</div>;
-    },
+  () => {
+    const MockRegistrationForm = () => <div>RegistrationForm</div>;
+    return MockRegistrationForm;
+  },
 );
 
 describe('RegistrationPage', () => {

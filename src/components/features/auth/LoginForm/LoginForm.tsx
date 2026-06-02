@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/store';
 import { persistSession, markTemporarySession } from '@/lib/clerk/session';
 
-export default function LoginForm() {
+const LoginForm = () => {
   const { signIn, fetchStatus } = useSignIn();
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
@@ -197,4 +197,6 @@ export default function LoginForm() {
       </p>
     </Card>
   );
-}
+};
+
+export default LoginForm;

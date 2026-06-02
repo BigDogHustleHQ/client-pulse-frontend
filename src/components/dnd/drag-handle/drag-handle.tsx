@@ -16,13 +16,13 @@ type DragHandleProps = React.ComponentProps<'button'> & {
 
 // The ⋮⋮ grip button. Spread dnd-kit `attributes`/`listeners` onto it to wire
 // up dragging. Defaults to an accessible "Drag to reorder" label.
-function DragHandle({
+const DragHandle = ({
   className,
   listeners,
   attributes,
   'aria-label': ariaLabel = 'Drag to reorder',
   ...props
-}: DragHandleProps) {
+}: DragHandleProps) => {
   return (
     <button
       type="button"
@@ -39,7 +39,7 @@ function DragHandle({
       <GripVertical className="size-4" aria-hidden="true" />
     </button>
   );
-}
+};
 
 export { DragHandle };
 export type { DragHandleProps };

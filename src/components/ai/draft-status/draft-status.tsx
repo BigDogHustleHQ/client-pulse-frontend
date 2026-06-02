@@ -19,19 +19,14 @@ export type DraftStatusProps = Omit<React.ComponentProps<'div'>, 'children'> & {
   onUndo?: () => void;
 };
 
-/**
- * Confirmation banner shown in place of an ApprovalBar once an AI draft is
- * approved or rejected. Gives the approve/reject actions an observable outcome
- * in the mock phase (no backend), and an optional Undo to reverse the decision.
- */
-function DraftStatus({
+const DraftStatus = ({
   resolution,
   approvedLabel = 'Reply approved — queued to send',
   rejectedLabel = 'Draft dismissed',
   onUndo,
   className,
   ...props
-}: DraftStatusProps) {
+}: DraftStatusProps) => {
   const approved = resolution === 'approved';
 
   return (
@@ -65,6 +60,6 @@ function DraftStatus({
       )}
     </div>
   );
-}
+};
 
 export { DraftStatus };

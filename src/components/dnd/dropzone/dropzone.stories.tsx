@@ -40,7 +40,7 @@ export const Default: Story = {
 };
 
 // A plain free-positioned draggable card (not sortable) for board columns.
-function Card({ id, label }: { id: string; label: string }) {
+const Card = ({ id, label }: { id: string; label: string }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id });
   const style: React.CSSProperties = transform
@@ -57,7 +57,7 @@ function Card({ id, label }: { id: string; label: string }) {
       <span className="text-sm">{label}</span>
     </div>
   );
-}
+};
 
 const columns = ['todo', 'doing', 'done'] as const;
 type Column = (typeof columns)[number];
@@ -67,7 +67,7 @@ const columnTitles: Record<Column, string> = {
   done: 'Done',
 };
 
-function BoardDemo() {
+const BoardDemo = () => {
   const [placement, setPlacement] = React.useState<Record<string, Column>>({
     'prep-stations': 'todo',
     'update-menu': 'todo',
@@ -82,7 +82,7 @@ function BoardDemo() {
     'order-supplies': 'Order supplies',
   };
 
-  function handleDragEnd(event: DragEndEvent) {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && columns.includes(over.id as Column)) {
       setPlacement((current) => ({
@@ -90,7 +90,7 @@ function BoardDemo() {
         [String(active.id)]: over.id as Column,
       }));
     }
-  }
+  };
 
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
@@ -110,7 +110,7 @@ function BoardDemo() {
       </div>
     </DragDropProvider>
   );
-}
+};
 
 // Free board: cards move across droppable columns. Drag a card over a column to
 // see the dashed highlight hint.

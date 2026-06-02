@@ -28,13 +28,13 @@ type DraggableProps = Omit<React.ComponentProps<'div'>, 'id' | 'children'> & {
 // Sortable item. Wraps useSortable, applies transform/transition, exposes a
 // grabbing state, and either renders a default DragHandle or hands the handle
 // props to a children render-prop for flexible placement.
-function Draggable({
+const Draggable = ({
   id,
   children,
   className,
   style,
   ...props
-}: DraggableProps) {
+}: DraggableProps) => {
   const {
     attributes,
     listeners,
@@ -75,7 +75,7 @@ function Draggable({
       )}
     </div>
   );
-}
+};
 
 export { Draggable };
 export type { DraggableProps, DragHandleRenderProps };

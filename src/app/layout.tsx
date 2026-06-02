@@ -16,11 +16,11 @@ export const metadata: Metadata = {
     'ClientPulse is an AI-driven operating system for local businesses — manage customer relationships, automate workflows, and unify your integrations in one place.',
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <ClerkProvider>
       <html
@@ -33,4 +33,6 @@ export default function RootLayout({
       </html>
     </ClerkProvider>
   );
-}
+};
+
+export default RootLayout;

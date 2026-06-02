@@ -14,7 +14,7 @@ interface ForgotPasswordFormProps {
   onStepChange?: (stepIndex: number) => void;
 }
 
-export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormProps) {
+const ForgotPasswordForm = ({ onStepChange }: ForgotPasswordFormProps) => {
   const { signIn } = useSignIn();
   const router = useRouter();
 
@@ -41,15 +41,20 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
     const { error: createError } = await signIn.create({ identifier: email });
 
     if (createError) {
-      setError(createError.message ?? 'Something went wrong. Please try again.');
+      setError(
+        createError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
 
-    const { error: sendCodeError } = await signIn.resetPasswordEmailCode.sendCode();
+    const { error: sendCodeError } =
+      await signIn.resetPasswordEmailCode.sendCode();
 
     if (sendCodeError) {
-      setError(sendCodeError.message ?? 'Something went wrong. Please try again.');
+      setError(
+        sendCodeError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
@@ -63,10 +68,13 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
     setIsSubmitting(true);
     setError('');
 
-    const { error: verifyError } = await signIn.resetPasswordEmailCode.verifyCode({ code });
+    const { error: verifyError } =
+      await signIn.resetPasswordEmailCode.verifyCode({ code });
 
     if (verifyError) {
-      setError(verifyError.message ?? 'Something went wrong. Please try again.');
+      setError(
+        verifyError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
@@ -86,10 +94,13 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
     setIsSubmitting(true);
     setError('');
 
-    const { error: submitError } = await signIn.resetPasswordEmailCode.submitPassword({ password });
+    const { error: submitError } =
+      await signIn.resetPasswordEmailCode.submitPassword({ password });
 
     if (submitError) {
-      setError(submitError.message ?? 'Something went wrong. Please try again.');
+      setError(
+        submitError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
@@ -101,11 +112,17 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
   if (isComplete) {
     return (
       <div className="auth auth--centered">
-        <div className="auth__icon-badge auth__icon-badge--success" aria-hidden="true">✓</div>
+        <div
+          className="auth__icon-badge auth__icon-badge--success"
+          aria-hidden="true"
+        >
+          ✓
+        </div>
         <div className="auth__header">
           <h1 className="auth__title">Password Updated!</h1>
           <p className="auth__subtitle">
-            Your password has been reset. You can now sign in with your new credentials.
+            Your password has been reset. You can now sign in with your new
+            credentials.
           </p>
         </div>
         <button
@@ -140,7 +157,13 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
   return (
     <div className="auth auth--centered">
       <div className="auth__icon-badge">
-        <Image src="/icons/reset.svg" alt="" width={24} height={24} aria-hidden="true" />
+        <Image
+          src="/icons/reset.svg"
+          alt=""
+          width={24}
+          height={24}
+          aria-hidden="true"
+        />
       </div>
 
       <div className="auth__header">
@@ -151,7 +174,9 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
       {step === 'email' && (
         <form onSubmit={handleSendCode} className="auth__form" noValidate>
           <div className="auth__field">
-            <label htmlFor="fp-email" className="auth__label">Email Address</label>
+            <label htmlFor="fp-email" className="auth__label">
+              Email Address
+            </label>
             <input
               id="fp-email"
               type="email"
@@ -163,10 +188,20 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
             />
           </div>
 
-          {error && <p role="alert" className="auth__error">{error}</p>}
+          {error && (
+            <p role="alert" className="auth__error">
+              {error}
+            </p>
+          )}
 
-          <button type="submit" className="auth__button auth__button--primary" disabled={isSubmitting}>
-            {isSubmitting ? 'Sending…' : (
+          <button
+            type="submit"
+            className="auth__button auth__button--primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              'Sending…'
+            ) : (
               <>
                 <span>Send Reset Link</span>
                 <span>→</span>
@@ -179,7 +214,9 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
       {step === 'code' && (
         <form onSubmit={handleVerifyCode} className="auth__form" noValidate>
           <div className="auth__field">
-            <label htmlFor="fp-code" className="auth__label">Verification Code</label>
+            <label htmlFor="fp-code" className="auth__label">
+              Verification Code
+            </label>
             <input
               id="fp-code"
               type="text"
@@ -193,10 +230,20 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
             />
           </div>
 
-          {error && <p role="alert" className="auth__error">{error}</p>}
+          {error && (
+            <p role="alert" className="auth__error">
+              {error}
+            </p>
+          )}
 
-          <button type="submit" className="auth__button auth__button--primary" disabled={isSubmitting}>
-            {isSubmitting ? 'Verifying…' : (
+          <button
+            type="submit"
+            className="auth__button auth__button--primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              'Verifying…'
+            ) : (
               <>
                 <span>Verify Code</span>
                 <span>→</span>
@@ -209,7 +256,9 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
       {step === 'password' && (
         <form onSubmit={handleSubmitPassword} className="auth__form" noValidate>
           <div className="auth__field">
-            <label htmlFor="fp-password" className="auth__label">New Password</label>
+            <label htmlFor="fp-password" className="auth__label">
+              New Password
+            </label>
             <div className="auth__input-wrapper">
               <input
                 id="fp-password"
@@ -237,7 +286,9 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
           </div>
 
           <div className="auth__field">
-            <label htmlFor="fp-confirm" className="auth__label">Confirm Password</label>
+            <label htmlFor="fp-confirm" className="auth__label">
+              Confirm Password
+            </label>
             <div className="auth__input-wrapper">
               <input
                 id="fp-confirm"
@@ -250,12 +301,20 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
               />
               <button
                 type="button"
-                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                aria-label={
+                  showConfirmPassword
+                    ? 'Hide confirm password'
+                    : 'Show confirm password'
+                }
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 className="auth__input-icon auth__input-icon--button"
               >
                 <Image
-                  src={showConfirmPassword ? '/icons/eye-off.svg' : '/icons/eye.svg'}
+                  src={
+                    showConfirmPassword
+                      ? '/icons/eye-off.svg'
+                      : '/icons/eye.svg'
+                  }
                   alt=""
                   width={16}
                   height={16}
@@ -264,10 +323,20 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
             </div>
           </div>
 
-          {error && <p role="alert" className="auth__error">{error}</p>}
+          {error && (
+            <p role="alert" className="auth__error">
+              {error}
+            </p>
+          )}
 
-          <button type="submit" className="auth__button auth__button--primary" disabled={isSubmitting}>
-            {isSubmitting ? 'Resetting…' : (
+          <button
+            type="submit"
+            className="auth__button auth__button--primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              'Resetting…'
+            ) : (
               <>
                 <span>Reset Password</span>
                 <span>→</span>
@@ -285,4 +354,6 @@ export default function ForgotPasswordForm({ onStepChange }: ForgotPasswordFormP
       </div>
     </div>
   );
-}
+};
+
+export default ForgotPasswordForm;

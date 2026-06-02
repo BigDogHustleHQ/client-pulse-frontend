@@ -20,7 +20,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Demo() {
+const Demo = () => {
   const { complete } = useMockAI();
   const [text, setText] = React.useState('');
   return (
@@ -37,7 +37,7 @@ function Demo() {
       </p>
     </div>
   );
-}
+};
 
 export const Usage: Story = {
   render: () => (

@@ -12,7 +12,7 @@ const gapClass = {
 
 type Gap = keyof typeof gapClass;
 
-function Stack({
+const Stack = ({
   gap = 'md',
   align,
   className,
@@ -20,7 +20,7 @@ function Stack({
 }: React.ComponentProps<'div'> & {
   gap?: Gap;
   align?: 'start' | 'center' | 'end' | 'stretch';
-}) {
+}) => {
   return (
     <div
       data-slot="stack"
@@ -36,14 +36,14 @@ function Stack({
       {...props}
     />
   );
-}
+};
 
-function Inline({
+const Inline = ({
   gap = 'sm',
   wrap = true,
   className,
   ...props
-}: React.ComponentProps<'div'> & { gap?: Gap; wrap?: boolean }) {
+}: React.ComponentProps<'div'> & { gap?: Gap; wrap?: boolean }) => {
   return (
     <div
       data-slot="inline"
@@ -56,7 +56,7 @@ function Inline({
       {...props}
     />
   );
-}
+};
 
 // Static class strings so Tailwind's scanner generates each utility — a
 // computed `grid-cols-${cols}` would never be detected. A bare grid-cols-N
@@ -78,13 +78,13 @@ const colsClass: Record<number, string> = {
   12: 'grid-cols-12',
 };
 
-function Grid({
+const Grid = ({
   cols = 3,
   gap = 'md',
   className,
   style,
   ...props
-}: React.ComponentProps<'div'> & { cols?: number; gap?: Gap }) {
+}: React.ComponentProps<'div'> & { cols?: number; gap?: Gap }) => {
   const colClass = colsClass[cols];
   return (
     <div
@@ -98,6 +98,6 @@ function Grid({
       {...props}
     />
   );
-}
+};
 
 export { Stack, Inline, Grid };

@@ -18,7 +18,7 @@ const fillVariants = cva(
   },
 );
 
-function ProgressBar({
+const ProgressBar = ({
   value,
   max = 100,
   tone,
@@ -32,7 +32,7 @@ function ProgressBar({
     max?: number;
     label?: React.ReactNode;
     showValue?: boolean;
-  }) {
+  }) => {
   const pct = Math.max(0, Math.min(100, max === 0 ? 0 : (value / max) * 100));
   return (
     <div
@@ -63,6 +63,6 @@ function ProgressBar({
       </div>
     </div>
   );
-}
+};
 
 export { ProgressBar, fillVariants };

@@ -20,11 +20,11 @@ const pillVariants = cva(
   },
 );
 
-function Pill({
+const Pill = ({
   className,
   tone,
   ...props
-}: React.ComponentProps<'span'> & VariantProps<typeof pillVariants>) {
+}: React.ComponentProps<'span'> & VariantProps<typeof pillVariants>) => {
   return (
     <span
       data-slot="pill"
@@ -32,6 +32,6 @@ function Pill({
       {...props}
     />
   );
-}
+};
 
 export { Pill, pillVariants };

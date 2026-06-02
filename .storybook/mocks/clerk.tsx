@@ -26,6 +26,6 @@ const signUp = {
 export const useSignIn = () => ({ signIn, fetchStatus: 'idle' as const });
 export const useSignUp = () => ({ signUp, fetchStatus: 'idle' as const });
 
-export function ClerkProvider({ children }: { children: React.ReactNode }) {
+export const ClerkProvider = ({ children }: { children: React.ReactNode }) => {
   return children;
-}
+};

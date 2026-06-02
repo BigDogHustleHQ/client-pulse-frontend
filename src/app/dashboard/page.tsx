@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 
-export default function DashboardPage() {
+const DashboardPage = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -48,7 +48,9 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-          <h2 className="text-base font-medium text-gray-900 mb-4">Recent Activity</h2>
+          <h2 className="text-base font-medium text-gray-900 mb-4">
+            Recent Activity
+          </h2>
           <p className="text-sm text-gray-400">
             No activity yet. Your workflow events will appear here.
           </p>
@@ -56,4 +58,6 @@ export default function DashboardPage() {
       </div>
     </main>
   );
-}
+};
+
+export default DashboardPage;

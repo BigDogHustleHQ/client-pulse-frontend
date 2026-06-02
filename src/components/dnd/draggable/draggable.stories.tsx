@@ -69,10 +69,10 @@ const initialItems: Item[] = [
   { id: 'orders', label: 'Online orders' },
 ];
 
-function SortableListDemo() {
+const SortableListDemo = () => {
   const [items, setItems] = React.useState(initialItems);
 
-  function handleDragEnd(event: DragEndEvent) {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       setItems((current) => {
@@ -81,7 +81,7 @@ function SortableListDemo() {
         return arrayMove(current, oldIndex, newIndex);
       });
     }
-  }
+  };
 
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
@@ -100,7 +100,7 @@ function SortableListDemo() {
       </SortableContext>
     </DragDropProvider>
   );
-}
+};
 
 // Full reorderable list with internal state. Keyboard: focus a handle, press
 // space to lift, arrows to move, space to drop.

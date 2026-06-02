@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/store';
 
-export default function RegistrationForm() {
+const RegistrationForm = () => {
   const { signUp, fetchStatus } = useSignUp();
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
@@ -196,4 +196,6 @@ export default function RegistrationForm() {
       </p>
     </Card>
   );
-}
+};
+
+export default RegistrationForm;

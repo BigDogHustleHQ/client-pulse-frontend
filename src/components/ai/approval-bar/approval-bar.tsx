@@ -16,14 +16,14 @@ export type ApprovalBarProps = Omit<React.ComponentProps<'div'>, 'onChange'> & {
   onReject?: (reason?: string) => void;
 };
 
-function ApprovalBar({
+const ApprovalBar = ({
   value,
   onApprove,
   onEdit,
   onReject,
   className,
   ...props
-}: ApprovalBarProps) {
+}: ApprovalBarProps) => {
   const [editing, setEditing] = React.useState(false);
   const [draft, setDraft] = React.useState(value);
 
@@ -35,15 +35,15 @@ function ApprovalBar({
     if (!editing) setDraft(value);
   }
 
-  function handleSave() {
+  const handleSave = () => {
     setEditing(false);
     onEdit?.(draft);
-  }
+  };
 
-  function handleCancel() {
+  const handleCancel = () => {
     setDraft(value);
     setEditing(false);
-  }
+  };
 
   if (editing) {
     return (
@@ -112,6 +112,6 @@ function ApprovalBar({
       </Button>
     </div>
   );
-}
+};
 
 export { ApprovalBar };

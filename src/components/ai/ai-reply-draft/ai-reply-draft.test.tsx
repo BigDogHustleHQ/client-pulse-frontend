@@ -6,15 +6,15 @@ import { MockAIProvider } from '../mock-ai-provider/mock-ai-provider';
 
 const TOKENS = ['Draft ', 'reply ', 'body'];
 
-function renderDraft(
+const renderDraft = (
   props: Partial<React.ComponentProps<typeof AIReplyDraft>> = {},
-) {
+) => {
   return render(
     <MockAIProvider tokens={TOKENS} delay={0}>
       <AIReplyDraft prompt="reply to review" {...props} />
     </MockAIProvider>,
   );
-}
+};
 
 describe('AIReplyDraft', () => {
   it('renders the AI-drafted body', async () => {

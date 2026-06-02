@@ -3,13 +3,12 @@ import { cn } from '@/lib/utils';
 
 export type HeatmapCell = number | null | undefined;
 
-/** Clamp an intensity value into the [0, 1] range. */
-export function intensity(value: number, max: number): number {
+export const intensity = (value: number, max: number): number => {
   if (max <= 0) return 0;
   return Math.max(0, Math.min(1, value / max));
-}
+};
 
-function Heatmap({
+const Heatmap = ({
   data,
   rowLabels,
   colLabels,
@@ -27,7 +26,7 @@ function Heatmap({
   max?: number;
   legendLabel?: React.ReactNode;
   formatValue?: (value: number) => React.ReactNode;
-}) {
+}) => {
   const cols = data.reduce((acc, row) => Math.max(acc, row.length), 0);
   const isEmpty = data.length === 0 || cols === 0;
 
@@ -148,6 +147,6 @@ function Heatmap({
       </div>
     </div>
   );
-}
+};
 
 export { Heatmap };

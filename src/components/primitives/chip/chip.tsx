@@ -4,7 +4,7 @@ import * as React from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-function Chip({
+const Chip = ({
   className,
   children,
   leading,
@@ -15,7 +15,7 @@ function Chip({
   leading?: React.ReactNode;
   onRemove?: () => void;
   removeLabel?: string;
-}) {
+}) => {
   return (
     <span
       data-slot="chip"
@@ -39,6 +39,6 @@ function Chip({
       )}
     </span>
   );
-}
+};
 
 export { Chip };

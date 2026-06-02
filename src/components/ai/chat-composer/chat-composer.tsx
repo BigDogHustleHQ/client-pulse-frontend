@@ -22,7 +22,7 @@ export type ChatComposerProps = Omit<
   onResponse?: (response: string) => void;
 };
 
-function ChatComposer({
+const ChatComposer = ({
   value,
   defaultValue = '',
   onValueChange,
@@ -30,7 +30,7 @@ function ChatComposer({
   onResponse,
   className,
   ...props
-}: ChatComposerProps) {
+}: ChatComposerProps) => {
   const { stream } = useMockAI();
   const isControlled = value !== undefined;
   const [internal, setInternal] = React.useState(defaultValue);
@@ -39,12 +39,12 @@ function ChatComposer({
   const [response, setResponse] = React.useState('');
   const [streaming, setStreaming] = React.useState(false);
 
-  function setPrompt(next: string) {
+  const setPrompt = (next: string) => {
     if (!isControlled) setInternal(next);
     onValueChange?.(next);
-  }
+  };
 
-  async function handleSubmit(event: React.FormEvent) {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (streaming || prompt.trim() === '') return;
 
@@ -57,7 +57,7 @@ function ChatComposer({
     }
     setStreaming(false);
     onResponse?.(out);
-  }
+  };
 
   return (
     <form
@@ -107,6 +107,6 @@ function ChatComposer({
       )}
     </form>
   );
-}
+};
 
 export { ChatComposer };
