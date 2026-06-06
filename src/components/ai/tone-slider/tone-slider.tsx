@@ -23,7 +23,8 @@ export type ToneSliderProps = Omit<
   label?: string;
 };
 
-const labelFor = (
+// Index of the nearest stop for a raw value.
+const stopIndexFor = (
   value: number,
   min: number,
   max: number,
@@ -31,8 +32,27 @@ const labelFor = (
 ) => {
   const span = max - min || 1;
   const ratio = Math.min(1, Math.max(0, (value - min) / span));
-  const index = Math.round(ratio * (stops.length - 1));
-  return stops[index];
+  return Math.round(ratio * (stops.length - 1));
+};
+
+const labelFor = (
+  value: number,
+  min: number,
+  max: number,
+  stops: readonly string[],
+) => stops[stopIndexFor(value, min, max, stops)];
+
+// Snap a raw value to the exact position of its nearest stop, so the thumb
+// locks onto a stop instead of resting between them.
+const snapToStop = (
+  value: number,
+  min: number,
+  max: number,
+  stops: readonly string[],
+) => {
+  if (stops.length <= 1) return min;
+  const index = stopIndexFor(value, min, max, stops);
+  return min + (index * (max - min)) / (stops.length - 1);
 };
 
 const ToneSlider = ({
@@ -49,6 +69,9 @@ const ToneSlider = ({
   const reactId = React.useId();
   const inputId = id ?? reactId;
   const currentLabel = labelFor(value, min, max, stops);
+  // Step sized to the gap between adjacent stops so the native range locks to
+  // stop positions (keyboard arrows move one stop at a time, drag snaps).
+  const step = stops.length > 1 ? (max - min) / (stops.length - 1) : undefined;
 
   return (
     <div
@@ -75,10 +98,13 @@ const ToneSlider = ({
         data-slot="tone-slider-input"
         min={min}
         max={max}
+        step={step}
         value={value}
         aria-label={label}
         aria-valuetext={currentLabel}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) =>
+          onChange(snapToStop(Number(e.target.value), min, max, stops))
+        }
         className="h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-brand outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         {...props}
       />

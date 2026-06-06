@@ -25,6 +25,34 @@ describe('ToneSlider', () => {
     );
   });
 
+  it('snaps an off-grid value to the nearest stop on change', () => {
+    const onChange = vi.fn();
+    render(
+      <ToneSlider
+        value={0}
+        onChange={onChange}
+        stops={['Formal', 'Professional', 'Friendly', 'Casual', 'Playful']}
+      />,
+    );
+    // 5 stops over 0..100 → stops at 0/25/50/75/100; raw 60 snaps to 50.
+    fireEvent.change(screen.getByLabelText('Tone'), {
+      target: { value: '60' },
+    });
+    expect(onChange).toHaveBeenCalledWith(50);
+  });
+
+  it('constrains the input step to the stop spacing', () => {
+    render(
+      <ToneSlider
+        value={0}
+        onChange={() => {}}
+        stops={['Formal', 'Professional', 'Friendly', 'Casual', 'Playful']}
+      />,
+    );
+    // 5 stops over 0..100 → one step per stop gap = 25.
+    expect(screen.getByLabelText('Tone')).toHaveAttribute('step', '25');
+  });
+
   it('maps mid value to the middle stop', () => {
     render(<ToneSlider value={50} onChange={() => {}} />);
     expect(screen.getByLabelText('Tone')).toHaveAttribute(
