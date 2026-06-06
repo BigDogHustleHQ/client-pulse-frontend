@@ -30,7 +30,7 @@ const ProgressBar = ({
   VariantProps<typeof fillVariants> & {
     value: number;
     max?: number;
-    label?: React.ReactNode;
+    label?: string;
     showValue?: boolean;
   }) => {
   const pct = Math.max(0, Math.min(100, max === 0 ? 0 : (value / max) * 100));
@@ -53,7 +53,7 @@ const ProgressBar = ({
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
-        aria-label={typeof label === 'string' ? label : undefined}
+        aria-label={label}
         className="h-2 w-full overflow-hidden rounded-full bg-muted"
       >
         <div

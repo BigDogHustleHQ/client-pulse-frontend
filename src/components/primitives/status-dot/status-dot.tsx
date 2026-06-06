@@ -25,7 +25,7 @@ const StatusDot = ({
 }: React.ComponentProps<'span'> &
   VariantProps<typeof dotVariants> & {
     pulse?: boolean;
-    label?: React.ReactNode;
+    label?: string;
   }) => {
   const dot = (
     <span className="relative inline-flex">
