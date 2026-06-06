@@ -8,6 +8,7 @@ import {
 } from '@dnd-kit/sortable';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { Pill } from '@/components/primitives';
+import { DragHandle } from '../drag-handle/drag-handle';
 import { DragDropProvider } from '../drag-drop-provider/drag-drop-provider';
 import { Draggable } from './draggable';
 
@@ -40,35 +41,58 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-// Children-as-function lets the handle live anywhere inside the item.
+// Children-as-function API: pass a render-prop to place the DragHandle anywhere
+// in the card. `attributes` and `listeners` from useSortable are forwarded so
+// you can spread them onto any element that should initiate dragging.
+// Here the handle is pinned to the trailing edge while body content fills the
+// left side — a common card layout pattern.
 export const CustomHandlePlacement: Story = {
   args: {
     children: ({ attributes, listeners }) => (
-      <div className="flex w-full items-center justify-between">
-        <span className="text-sm">Handle on the right</span>
-        <button
-          type="button"
-          aria-label="Drag to reorder"
-          className="cursor-grab text-xs text-muted-foreground"
-          {...attributes}
-          {...listeners}
-        >
-          ⋮⋮
-        </button>
+      <div className="flex w-full items-center gap-3">
+        {/* Body content — not wired to drag; only the handle initiates it */}
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="truncate text-sm font-medium text-foreground">
+            Upcoming reservations
+          </span>
+          <span className="text-xs text-muted-foreground">
+            12 bookings today
+          </span>
+        </div>
+        {/* DragHandle on the trailing edge, receiving dnd-kit wiring */}
+        <DragHandle
+          aria-label="Drag to reorder Upcoming reservations"
+          attributes={attributes}
+          listeners={listeners}
+        />
       </div>
     ),
   },
 };
 
-type Item = { id: string; label: string };
+type Item = {
+  id: string;
+  label: string;
+  count: number;
+  tone?: 'success' | 'warning' | 'danger' | 'neutral';
+};
 
 const initialItems: Item[] = [
-  { id: 'covers', label: 'Covers today' },
-  { id: 'reservations', label: 'Upcoming reservations' },
-  { id: 'reviews', label: 'New reviews' },
-  { id: 'orders', label: 'Online orders' },
+  { id: 'covers', label: 'Covers today', count: 42, tone: 'success' },
+  {
+    id: 'reservations',
+    label: 'Upcoming reservations',
+    count: 12,
+    tone: 'neutral',
+  },
+  { id: 'reviews', label: 'New reviews', count: 7, tone: 'warning' },
+  { id: 'orders', label: 'Online orders', count: 3, tone: 'danger' },
 ];
 
+// Full reorderable list with arrayMove state management.
+// Drag a row to reorder — the list order updates immediately on drop.
+// Keyboard: focus a handle, press Space to lift, Arrow keys to move, Space to drop.
+// The dragging item becomes semi-transparent (opacity-60) via data-dragging.
 const SortableListDemo = () => {
   const [items, setItems] = React.useState(initialItems);
 
@@ -90,10 +114,16 @@ const SortableListDemo = () => {
         strategy={verticalListSortingStrategy}
       >
         <div className="flex w-80 flex-col gap-2">
-          {items.map((item, index) => (
+          {items.map((item) => (
             <Draggable key={item.id} id={item.id}>
-              <span className="text-sm">{item.label}</span>
-              <Pill className="ml-auto">{index + 1}</Pill>
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <span className="truncate text-sm font-medium text-foreground">
+                  {item.label}
+                </span>
+              </div>
+              <Pill tone={item.tone} className="ml-auto shrink-0 tabular-nums">
+                {item.count}
+              </Pill>
             </Draggable>
           ))}
         </div>
@@ -103,7 +133,7 @@ const SortableListDemo = () => {
 };
 
 // Full reorderable list with internal state. Keyboard: focus a handle, press
-// space to lift, arrows to move, space to drop.
+// Space to lift, Arrow keys to move, Space to drop.
 export const SortableList: Story = {
   render: () => <SortableListDemo />,
   decorators: [(Story) => <Story />],

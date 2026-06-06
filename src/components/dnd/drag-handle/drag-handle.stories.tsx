@@ -5,6 +5,15 @@ const meta = {
   title: 'DnD/DragHandle',
   component: DragHandle,
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Grip button that wires up dnd-kit drag behaviour when `attributes` and `listeners` are spread onto it. ' +
+          'Pass `aria-label` to override the default "Drag to reorder" label for the context (e.g. `aria-label="Drag to reorder reservation"`).',
+      },
+    },
+  },
 } satisfies Meta<typeof DragHandle>;
 
 export default meta;
@@ -19,10 +28,4 @@ export const InRow: Story = {
       <span className="text-sm">Drag this row</span>
     </div>
   ),
-};
-
-export const CustomLabel: Story = {
-  args: {
-    'aria-label': 'Drag to reorder reservation',
-  },
 };

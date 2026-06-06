@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { Btn } from './btn';
 
 const meta = {
-  title: 'Primitives/Btn',
+  title: 'Primitives/Button',
   component: Btn,
   tags: ['autodocs'],
   args: { children: 'Save changes' },

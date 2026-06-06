@@ -9,20 +9,21 @@ export type Cohort = {
 };
 
 const CohortGrid = ({
-  cohorts,
+  data,
   periods,
   periodLabel = (i) => `P${i}`,
   className,
   ...props
 }: Omit<React.ComponentProps<'div'>, 'children'> & {
-  cohorts: Cohort[];
+  /** Cohort rows to display. */
+  data: Cohort[];
   /** Number of period columns. Defaults to the longest retention row. */
   periods?: number;
   periodLabel?: (i: number) => React.ReactNode;
 }) => {
   const cols =
-    periods ?? cohorts.reduce((acc, c) => Math.max(acc, c.retention.length), 0);
-  const isEmpty = cohorts.length === 0 || cols === 0;
+    periods ?? data.reduce((acc, c) => Math.max(acc, c.retention.length), 0);
+  const isEmpty = data.length === 0 || cols === 0;
 
   if (isEmpty) {
     return (
@@ -70,7 +71,7 @@ const CohortGrid = ({
           </tr>
         </thead>
         <tbody>
-          {cohorts.map((cohort, r) => (
+          {data.map((cohort, r) => (
             <tr key={`${cohort.label}-${r}`}>
               <td className="px-2 py-1 font-medium whitespace-nowrap text-foreground">
                 {cohort.label}

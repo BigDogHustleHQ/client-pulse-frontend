@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     periodLabel: (i) => `Mo ${i}`,
-    cohorts: [
+    data: [
       { label: 'Jan', size: 320, retention: [100, 62, 48, 41, 38, 35] },
       { label: 'Feb', size: 410, retention: [100, 66, 51, 44, 40] },
       { label: 'Mar', size: 380, retention: [100, 59, 46, 39] },
@@ -26,7 +26,7 @@ export const Default: Story = {
 
 export const PartialPeriods: Story = {
   args: {
-    cohorts: [
+    data: [
       { label: 'Week 1', size: 120, retention: [100, 55, 40] },
       { label: 'Week 2', size: 140, retention: [100, 58] },
       { label: 'Week 3', size: 160, retention: [100] },
@@ -37,7 +37,7 @@ export const PartialPeriods: Story = {
 
 export const Empty: Story = {
   args: {
-    cohorts: [],
+    data: [],
     className: 'max-w-md',
   },
 };
