@@ -4,7 +4,6 @@ export { Pill, pillVariants } from './pill/pill';
 export { Badge, badgeVariants } from './badge/badge';
 export { StatusDot, dotVariants } from './status-dot/status-dot';
 export { Chip } from './chip/chip';
-export { Btn } from './btn/btn';
 export { ProgressBar, fillVariants } from './progress-bar/progress-bar';
 export { MiniTable } from './mini-table/mini-table';
 export type { MiniTableColumn } from './mini-table/mini-table';

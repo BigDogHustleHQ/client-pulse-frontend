@@ -35,6 +35,7 @@ export const Ghost: Story = { args: { variant: 'ghost' } };
 export const Destructive: Story = { args: { variant: 'destructive' } };
 export const Link: Story = { args: { variant: 'link' } };
 export const Disabled: Story = { args: { disabled: true } };
+export const Loading: Story = { args: { loading: true } };
 
 export const AllVariants: Story = {
   render: () => (

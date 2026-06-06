@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Loader2 } from 'lucide-react';
 import { Slot } from 'radix-ui';
 
 import { cn } from '@/lib/utils';
@@ -46,10 +47,22 @@ const Button = ({
   variant = 'default',
   size = 'default',
   asChild = false,
+  loading,
+  disabled,
+  children,
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    /**
+     * When true, renders a spinner before children, sets aria-busy, and forces
+     * the button into the disabled state.
+     *
+     * Note: when `asChild` is true the spinner is suppressed — the slotted
+     * element is responsible for its own loading presentation. aria-busy and
+     * the disabled state are still applied to the host element.
+     */
+    loading?: boolean;
   }) => {
   const Comp = asChild ? Slot.Root : 'button';
 
@@ -58,9 +71,16 @@ const Button = ({
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      aria-busy={loading || undefined}
+      disabled={disabled || loading}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    />
+    >
+      {loading && !asChild && (
+        <Loader2 className="animate-spin animate-in fade-in-0 zoom-in-95 duration-200 motion-reduce:animate-none" />
+      )}
+      {children}
+    </Comp>
   );
 };
 
