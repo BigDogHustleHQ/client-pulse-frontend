@@ -186,10 +186,23 @@ const ToneSlider = ({
         />
       </div>
 
-      <div className="flex justify-between text-xs text-muted-foreground">
-        {stops.map((stop) => (
-          <span key={stop}>{stop}</span>
-        ))}
+      <div className="relative h-4 text-xs text-muted-foreground">
+        {stops.map((stop, i) => {
+          // Center each label on its stop's track position (0%, 25%, 50%, …),
+          // not edge-to-edge — so the label sits directly beneath the thumb
+          // when it's parked on that stop.
+          const stopPct =
+            stops.length > 1 ? (i / (stops.length - 1)) * 100 : 50;
+          return (
+            <span
+              key={stop}
+              style={{ left: `${stopPct}%` }}
+              className="absolute top-0 -translate-x-1/2 whitespace-nowrap"
+            >
+              {stop}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
