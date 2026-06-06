@@ -11,7 +11,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const hours = ['9a', '11a', '1p', '3p', '5p', '7p', '9p'];
+const hours = ['9am', '11am', '1pm', '3pm', '5pm', '7pm', '9pm'];
 
 export const Default: Story = {
   args: {

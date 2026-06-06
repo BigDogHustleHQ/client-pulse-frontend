@@ -27,7 +27,7 @@ describe('Heatmap', () => {
       <Heatmap
         data={data}
         rowLabels={['Mon', 'Tue']}
-        colLabels={['9a', '11a', '1p']}
+        colLabels={['9am', '11am', '1pm']}
       />,
     );
     expect(screen.getAllByRole('gridcell')).toHaveLength(6);
@@ -42,7 +42,7 @@ describe('Heatmap', () => {
           [undefined, 5, 6],
         ]}
         rowLabels={['Mon', 'Tue']}
-        colLabels={['9a', '11a', '1p']}
+        colLabels={['9am', '11am', '1pm']}
       />,
     );
     expect(screen.getAllByRole('gridcell')).toHaveLength(6);
@@ -58,7 +58,7 @@ describe('Heatmap', () => {
       <Heatmap
         data={data}
         rowLabels={['Mon', 'Tue']}
-        colLabels={['9a', '11a', '1p']}
+        colLabels={['9am', '11am', '1pm']}
       />,
     );
     expect(await axe(container)).toHaveNoViolations();
