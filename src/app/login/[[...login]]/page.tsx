@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import LoginForm from '@/components/features/auth/LoginForm/LoginForm';
 
-export default function LoginPage() {
+const LoginPage = () => {
   const year = new Date().getFullYear();
 
   return (
@@ -12,11 +12,11 @@ export default function LoginPage() {
             <div className="login-hero__brand">
               <Image
                 src="/icons/sparkles.svg"
-                alt="Client Pulse"
+                alt="ClientPulse"
                 width={34}
                 height={34}
               />
-              <span>Client Pulse</span>
+              <span>ClientPulse</span>
             </div>
             <h2 className="login-hero__heading">
               Intelligence that feels <em>human</em>.
@@ -35,11 +35,11 @@ export default function LoginPage() {
 
       <footer className="login-footer">
         <div className="login-footer__left">
-          <span className="login-footer__brand">Client Pulse</span>
+          <span className="login-footer__brand">ClientPulse</span>
           <span className="login-footer__sep" aria-hidden="true">
             |
           </span>
-          <span>© {year} Client Pulse. All rights reserved.</span>
+          <span>© {year} ClientPulse. All rights reserved.</span>
         </div>
         <nav className="login-footer__nav" aria-label="Footer">
           <a href="#">Privacy Policy</a>
@@ -50,4 +50,6 @@ export default function LoginPage() {
       </footer>
     </div>
   );
-}
+};
+
+export default LoginPage;

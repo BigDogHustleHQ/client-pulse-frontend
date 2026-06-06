@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
 
-export default function DashboardPage() {
+const DashboardPage = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -58,4 +58,6 @@ export default function DashboardPage() {
       </div>
     </main>
   );
-}
+};
+
+export default DashboardPage;

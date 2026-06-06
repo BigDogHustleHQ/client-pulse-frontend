@@ -5,7 +5,7 @@ import ForgotPasswordForm, {
   STEPS,
 } from '@/components/features/auth/ForgotPasswordForm/ForgotPasswordForm';
 
-export default function ForgotPasswordPage() {
+const ForgotPasswordPage = () => {
   const year = new Date().getFullYear();
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -27,11 +27,11 @@ export default function ForgotPasswordPage() {
 
       <footer className="login-footer">
         <div className="login-footer__left">
-          <span className="login-footer__brand">Client Pulse</span>
+          <span className="login-footer__brand">ClientPulse</span>
           <span className="login-footer__sep" aria-hidden="true">
             |
           </span>
-          <span>© {year} Client Pulse. All rights reserved.</span>
+          <span>© {year} ClientPulse. All rights reserved.</span>
         </div>
         <nav className="login-footer__nav" aria-label="Footer">
           <a href="#">Privacy Policy</a>
@@ -42,4 +42,6 @@ export default function ForgotPasswordPage() {
       </footer>
     </div>
   );
-}
+};
+
+export default ForgotPasswordPage;

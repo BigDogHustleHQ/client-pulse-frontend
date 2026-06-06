@@ -14,6 +14,13 @@ export const useSignIn = () => ({
     create: ok,
     finalize: ok,
     sso: ok,
+    // Happy-path reset flow so ForgotPasswordForm stories/play functions can
+    // step through email → code → new password.
+    resetPasswordEmailCode: {
+      sendCode: ok,
+      verifyCode: ok,
+      submitPassword: ok,
+    },
   },
   fetchStatus: 'idle' as const,
 });

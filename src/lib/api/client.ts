@@ -1,7 +1,7 @@
-export async function gqlFetch<T>(
+export const gqlFetch = async <T>(
   query: string,
   token: string | null,
-): Promise<T> {
+): Promise<T> => {
   const res = await fetch(
     process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/graphql',
     {
@@ -24,4 +24,4 @@ export async function gqlFetch<T>(
   }
 
   return json.data as T;
-}
+};

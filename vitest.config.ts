@@ -22,7 +22,12 @@ export default defineConfig({
           globals: true,
           setupFiles: ['./vitest.setup.ts'],
           include: ['src/**/*.test.{ts,tsx}'],
-          server: { deps: { inline: ['zustand', '@tanstack/react-query'] } },
+          // Inline all deps so Vite resolves the Next react alias to a file.
+          // Externalized ESM (radix-ui / @floating-ui and their transitive
+          // tree, used by the shadcn primitives) otherwise hits an unsupported
+          // directory import of `next/dist/compiled/react`. `true` avoids
+          // enumerating the whole dependency tree.
+          server: { deps: { inline: true } },
         },
       },
       // Storybook tests in a real browser: each story's play fn + axe a11y.

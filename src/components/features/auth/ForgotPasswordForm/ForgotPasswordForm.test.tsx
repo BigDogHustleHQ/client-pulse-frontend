@@ -62,15 +62,13 @@ describe('ForgotPasswordForm', () => {
       expect(mockCreate).toHaveBeenCalledWith({
         identifier: 'user@company.com',
       });
-      expect(mockSendCode).toHaveBeenCalled();
+      expect(mockSendCode).toHaveBeenCalledWith();
       expect(screen.getByText('Check Your Email')).toBeInTheDocument();
     });
   });
 
   it('shows error message when code send fails', async () => {
-    mockSendCode.mockResolvedValueOnce({
-      error: { message: 'Email not found' },
-    });
+    mockCreate.mockResolvedValueOnce({ error: { message: 'Email not found' } });
 
     render(<ForgotPasswordForm />);
     fireEvent.change(screen.getByLabelText('Email Address'), {
@@ -80,6 +78,25 @@ describe('ForgotPasswordForm', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Email not found');
+    });
+    expect(screen.getByText('Reset Password')).toBeInTheDocument();
+  });
+
+  it('shows error message when reset code send fails', async () => {
+    mockSendCode.mockResolvedValueOnce({
+      error: { message: 'Could not send code' },
+    });
+
+    render(<ForgotPasswordForm />);
+    fireEvent.change(screen.getByLabelText('Email Address'), {
+      target: { value: 'user@company.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Send Reset Link →' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Could not send code',
+      );
     });
     expect(screen.getByText('Reset Password')).toBeInTheDocument();
   });
@@ -118,7 +135,7 @@ describe('ForgotPasswordForm', () => {
 
   // ─── Step 2: verification code ────────────────────────────────────────────
 
-  async function advanceToStep2() {
+  const advanceToStep2 = async () => {
     render(<ForgotPasswordForm />);
     fireEvent.change(screen.getByLabelText('Email Address'), {
       target: { value: 'user@company.com' },
@@ -127,7 +144,7 @@ describe('ForgotPasswordForm', () => {
     await waitFor(() =>
       expect(screen.getByText('Check Your Email')).toBeInTheDocument(),
     );
-  }
+  };
 
   it('renders step 2 form elements', async () => {
     await advanceToStep2();
@@ -212,7 +229,7 @@ describe('ForgotPasswordForm', () => {
 
   // ─── Step 3: new password ─────────────────────────────────────────────────
 
-  async function advanceToStep3() {
+  const advanceToStep3 = async () => {
     await advanceToStep2();
     fireEvent.change(screen.getByLabelText('Verification Code'), {
       target: { value: '123456' },
@@ -223,7 +240,7 @@ describe('ForgotPasswordForm', () => {
         screen.getByRole('heading', { name: 'New Password' }),
       ).toBeInTheDocument(),
     );
-  }
+  };
 
   it('renders step 3 form elements', async () => {
     await advanceToStep3();

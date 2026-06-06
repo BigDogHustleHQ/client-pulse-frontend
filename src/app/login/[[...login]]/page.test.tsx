@@ -15,9 +15,7 @@ describe('LoginPage', () => {
 
   it('renders the brand logo', () => {
     render(<LoginPage />);
-    expect(screen.getAllByText('Client Pulse').length).toBeGreaterThanOrEqual(
-      1,
-    );
+    expect(screen.getAllByText('ClientPulse').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders the hero heading with italic human', () => {
@@ -40,7 +38,7 @@ describe('LoginPage', () => {
     render(<LoginPage />);
     const year = new Date().getFullYear();
     expect(
-      screen.getByText(new RegExp(`© ${year} Client Pulse`)),
+      screen.getByText(new RegExp(`© ${year} ClientPulse`)),
     ).toBeInTheDocument();
   });
 

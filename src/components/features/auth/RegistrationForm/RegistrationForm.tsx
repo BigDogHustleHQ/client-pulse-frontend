@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
 
-export default function RegistrationForm() {
+const RegistrationForm = () => {
   const { signUp, fetchStatus } = useSignUp();
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
@@ -190,4 +190,6 @@ export default function RegistrationForm() {
       </p>
     </div>
   );
-}
+};
+
+export default RegistrationForm;

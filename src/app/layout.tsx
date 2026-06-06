@@ -11,23 +11,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Client Pulse',
+  title: 'ClientPulse',
   description:
-    'Client Pulse is an AI-driven operating system for local businesses — manage customer relationships, automate workflows, and unify your integrations in one place.',
+    'ClientPulse is an AI-driven operating system for local businesses — manage customer relationships, automate workflows, and unify your integrations in one place.',
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geistMono.variable} h-full antialiased`}>
+      <html
+        lang="en"
+        className={`${geistMono.variable} h-full font-sans antialiased`}
+      >
         <body className="min-h-full flex flex-col">
           <QueryProvider>{children}</QueryProvider>
         </body>
       </html>
     </ClerkProvider>
   );
-}
+};
+
+export default RootLayout;

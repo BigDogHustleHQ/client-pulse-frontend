@@ -14,9 +14,7 @@ interface ForgotPasswordFormProps {
   onStepChange?: (stepIndex: number) => void;
 }
 
-export default function ForgotPasswordForm({
-  onStepChange,
-}: ForgotPasswordFormProps) {
+const ForgotPasswordForm = ({ onStepChange }: ForgotPasswordFormProps) => {
   const { signIn } = useSignIn();
   const router = useRouter();
 
@@ -50,10 +48,13 @@ export default function ForgotPasswordForm({
       return;
     }
 
-    const { error: sendError } = await signIn.resetPasswordEmailCode.sendCode();
+    const { error: sendCodeError } =
+      await signIn.resetPasswordEmailCode.sendCode();
 
-    if (sendError) {
-      setError(sendError.message ?? 'Something went wrong. Please try again.');
+    if (sendCodeError) {
+      setError(
+        sendCodeError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
@@ -353,4 +354,6 @@ export default function ForgotPasswordForm({
       </div>
     </div>
   );
-}
+};
+
+export default ForgotPasswordForm;
