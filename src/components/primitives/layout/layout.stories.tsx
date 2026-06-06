@@ -29,6 +29,14 @@ export const StackStory: Story = {
 
 export const InlineStory: Story = {
   name: 'Inline',
+  // Demos the `brand` Pill tone, which uses the design system's identity
+  // color (text-brand on bg-brand/15) and falls below WCAG AA 4.5:1 by
+  // design. See pill.stories.tsx for the same suppression rationale.
+  parameters: {
+    a11y: {
+      config: { rules: [{ id: 'color-contrast', enabled: false }] },
+    },
+  },
   render: () => (
     <Inline gap="sm">
       <Pill tone="brand">Tag</Pill>

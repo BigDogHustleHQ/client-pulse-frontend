@@ -53,7 +53,7 @@ const KPI = ({
           className={cn(
             'inline-flex items-center gap-1 text-xs font-medium',
             good === null && 'text-muted-foreground',
-            good === true && 'text-emerald-600 dark:text-emerald-400',
+            good === true && 'text-emerald-700 dark:text-emerald-400',
             good === false && 'text-destructive',
           )}
         >

@@ -11,9 +11,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+// Even a "standalone" Checkbox needs a discernible name for screen readers
+// (Radix Checkbox renders a real <button role="checkbox">). Pass aria-label
+// for the isolated demos; the WithLabel story shows the more common <Label>
+// association pattern.
+export const Default: Story = {
+  args: { 'aria-label': 'Subscribe to newsletter' },
+};
 
-export const Checked: Story = { args: { defaultChecked: true } };
+export const Checked: Story = {
+  args: { 'aria-label': 'Remember me', defaultChecked: true },
+};
 
 export const WithLabel: Story = {
   render: () => (

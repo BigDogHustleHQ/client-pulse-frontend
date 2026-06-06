@@ -19,7 +19,7 @@ describe('KPI', () => {
       <KPI label="No-shows" value="3%" delta={-2} positiveIsGood={false} />,
     );
     expect(screen.getByText('-2%')).toBeInTheDocument();
-    expect(container.querySelector('.text-emerald-600')).toBeTruthy();
+    expect(container.querySelector('.text-emerald-700')).toBeTruthy();
   });
 
   it('marks a positive delta as bad when positiveIsGood is false', () => {
