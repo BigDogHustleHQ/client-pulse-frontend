@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuthStore } from '@/store';
+import { persistSession, markTemporarySession } from '@/lib/clerk/session';
 
 export default function LoginForm() {
   const { signIn, fetchStatus } = useSignIn();
@@ -40,13 +41,22 @@ export default function LoginForm() {
     if (signIn.status === 'complete') {
       await signIn.finalize();
 
+      if (rememberMe) {
+        persistSession();
+      } else {
+        markTemporarySession();
+      }
+
       setUser({
         clerkId: signIn.createdSessionId ?? '',
         email: signIn.identifier ?? email,
         firstName: signIn.userData.firstName ?? null,
         lastName: signIn.userData.lastName ?? null,
       });
+      setIsSubmitting(false);
+
       router.push('/dashboard');
+      return;
     }
 
     setIsSubmitting(false);

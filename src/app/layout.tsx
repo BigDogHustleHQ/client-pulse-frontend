@@ -11,9 +11,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ClientPulse',
+  title: 'Client Pulse',
   description:
-    'ClientPulse is an AI-driven operating system for local businesses — manage customer relationships, automate workflows, and unify your integrations in one place.',
+    'Client Pulse is an AI-driven operating system for local businesses — manage customer relationships, automate workflows, and unify your integrations in one place.',
 };
 
 export default function RootLayout({

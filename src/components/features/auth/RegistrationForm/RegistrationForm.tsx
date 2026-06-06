@@ -48,11 +48,13 @@ export default function RegistrationForm() {
         firstName: signUp.firstName,
         lastName: signUp.lastName,
       });
+      setIsSubmitting(false);
+
       router.push('/dashboard');
-    } else {
-      setError('Please check your email to verify your account.');
+      return;
     }
 
+    setError('Please check your email to verify your account.');
     setIsSubmitting(false);
   };
 

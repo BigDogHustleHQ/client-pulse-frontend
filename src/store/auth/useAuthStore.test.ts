@@ -1,11 +1,12 @@
+import { renderHook, act } from '@testing-library/react';
 import useAuthStore from './useAuthStore';
 import type { AuthUser } from './types';
 
-const sampleUser: AuthUser = {
-  clerkId: 'user_123',
-  email: 'owner@business.com',
-  firstName: 'Jordan',
-  lastName: 'Rivera',
+const user: AuthUser = {
+  clerkId: 'abc',
+  email: 'a@b.com',
+  firstName: 'Jane',
+  lastName: 'Smith',
 };
 
 describe('useAuthStore', () => {
@@ -13,18 +14,27 @@ describe('useAuthStore', () => {
     useAuthStore.setState({ user: null });
   });
 
-  it('starts with no user', () => {
-    expect(useAuthStore.getState().user).toBeNull();
+  it('starts with null user', () => {
+    const { result } = renderHook(() => useAuthStore((s) => s.user));
+    expect(result.current).toBeNull();
   });
 
-  it('sets the user', () => {
-    useAuthStore.getState().setUser(sampleUser);
-    expect(useAuthStore.getState().user).toEqual(sampleUser);
+  it('setUser updates the user', () => {
+    const { result } = renderHook(() => useAuthStore((s) => s));
+    act(() => {
+      result.current.setUser(user);
+    });
+    expect(result.current.user).toEqual(user);
   });
 
-  it('clears the user', () => {
-    useAuthStore.getState().setUser(sampleUser);
-    useAuthStore.getState().clearAuth();
-    expect(useAuthStore.getState().user).toBeNull();
+  it('clearAuth resets user to null', () => {
+    const { result } = renderHook(() => useAuthStore((s) => s));
+    act(() => {
+      result.current.setUser(user);
+    });
+    act(() => {
+      result.current.clearAuth();
+    });
+    expect(result.current.user).toBeNull();
   });
 });
