@@ -16,6 +16,8 @@ permissions:
   contents: read
 
 jobs:
+  build:
+    uses: ./.github/workflows/build.yml
   unit:
     uses: ./.github/workflows/unit.yml
   storybook-test:
