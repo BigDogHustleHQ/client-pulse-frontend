@@ -1,32 +1,33 @@
+import type { Mock } from 'vitest';
 import { render } from '@testing-library/react';
 import SessionGuard from './SessionGuard';
 
-const mockSignOut = jest.fn();
-const mockReplace = jest.fn();
+const mockSignOut = vi.fn();
+const mockReplace = vi.fn();
 
-jest.mock('@clerk/nextjs', () => ({
-  useAuth: jest.fn(),
+vi.mock('@clerk/nextjs', () => ({
+  useAuth: vi.fn(),
 }));
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-jest.mock('@/lib/clerk/session', () => ({
-  isSessionAuthorized: jest.fn(),
-  clearSessionMarkers: jest.fn(),
+vi.mock('@/lib/clerk/session', () => ({
+  isSessionAuthorized: vi.fn(),
+  clearSessionMarkers: vi.fn(),
 }));
 
 import { useAuth } from '@clerk/nextjs';
 import { isSessionAuthorized, clearSessionMarkers } from '@/lib/clerk/session';
 
-const mockUseAuth = useAuth as jest.Mock;
-const mockIsSessionAuthorized = isSessionAuthorized as jest.Mock;
-const mockClearSessionMarkers = clearSessionMarkers as jest.Mock;
+const mockUseAuth = useAuth as Mock;
+const mockIsSessionAuthorized = isSessionAuthorized as Mock;
+const mockClearSessionMarkers = clearSessionMarkers as Mock;
 
 describe('SessionGuard', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockSignOut.mockResolvedValue(undefined);
   });
 

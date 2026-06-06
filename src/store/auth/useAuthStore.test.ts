@@ -1,7 +1,13 @@
 import { renderHook, act } from '@testing-library/react';
 import useAuthStore from './useAuthStore';
+import type { AuthUser } from './types';
 
-const user = { clerkId: 'abc', email: 'a@b.com', firstName: 'Jane', lastName: 'Smith' };
+const user: AuthUser = {
+  clerkId: 'abc',
+  email: 'a@b.com',
+  firstName: 'Jane',
+  lastName: 'Smith',
+};
 
 describe('useAuthStore', () => {
   beforeEach(() => {
@@ -15,14 +21,20 @@ describe('useAuthStore', () => {
 
   it('setUser updates the user', () => {
     const { result } = renderHook(() => useAuthStore((s) => s));
-    act(() => { result.current.setUser(user); });
+    act(() => {
+      result.current.setUser(user);
+    });
     expect(result.current.user).toEqual(user);
   });
 
   it('clearAuth resets user to null', () => {
     const { result } = renderHook(() => useAuthStore((s) => s));
-    act(() => { result.current.setUser(user); });
-    act(() => { result.current.clearAuth(); });
+    act(() => {
+      result.current.setUser(user);
+    });
+    act(() => {
+      result.current.clearAuth();
+    });
     expect(result.current.user).toBeNull();
   });
 });

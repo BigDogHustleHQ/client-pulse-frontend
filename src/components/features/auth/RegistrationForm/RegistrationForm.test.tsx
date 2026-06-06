@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RegistrationForm from './RegistrationForm';
 
-const mockCreate = jest.fn();
-const mockFinalize = jest.fn();
-const mockSSO = jest.fn();
-const mockPush = jest.fn();
-const mockSetUser = jest.fn();
+const mockCreate = vi.fn();
+const mockFinalize = vi.fn();
+const mockSSO = vi.fn();
+const mockPush = vi.fn();
+const mockSetUser = vi.fn();
 
 const mockSignUp = {
   status: 'complete' as string,
@@ -19,25 +19,28 @@ const mockSignUp = {
   sso: mockSSO,
 };
 
-jest.mock('@clerk/nextjs', () => ({
-  useSignUp: jest.fn(() => ({
+vi.mock('@clerk/nextjs', () => ({
+  useSignUp: vi.fn(() => ({
     signUp: mockSignUp,
     fetchStatus: 'idle',
   })),
 }));
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-jest.mock('@/store', () => ({
-  useAuthStore: (selector: (state: { setUser: jest.Mock }) => jest.Mock) =>
-    selector({ setUser: mockSetUser }),
+vi.mock('@/store', () => ({
+  useAuthStore: (
+    selector: (state: {
+      setUser: ReturnType<typeof vi.fn>;
+    }) => ReturnType<typeof vi.fn>,
+  ) => selector({ setUser: mockSetUser }),
 }));
 
 describe('RegistrationForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     mockSignUp.status = 'complete';
     mockSignUp.createdSessionId = 'sess_123';
@@ -58,21 +61,35 @@ describe('RegistrationForm', () => {
     expect(screen.getByLabelText('Last Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Business Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign up with google/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Create account' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /sign up with google/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Log in')).toBeInTheDocument();
   });
 
   it('should update fields on input', () => {
     render(<RegistrationForm />);
-    fireEvent.change(screen.getByLabelText('First Name'), { target: { value: 'Jane' } });
-    fireEvent.change(screen.getByLabelText('Last Name'), { target: { value: 'Smith' } });
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'jane@company.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText('First Name'), {
+      target: { value: 'Jane' },
+    });
+    fireEvent.change(screen.getByLabelText('Last Name'), {
+      target: { value: 'Smith' },
+    });
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'jane@company.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'password123' },
+    });
 
     expect(screen.getByLabelText('First Name')).toHaveValue('Jane');
     expect(screen.getByLabelText('Last Name')).toHaveValue('Smith');
-    expect(screen.getByLabelText('Business Email')).toHaveValue('jane@company.com');
+    expect(screen.getByLabelText('Business Email')).toHaveValue(
+      'jane@company.com',
+    );
     expect(screen.getByLabelText('Password')).toHaveValue('password123');
   });
 
@@ -91,10 +108,18 @@ describe('RegistrationForm', () => {
 
   it('should create account, populate auth store, and redirect on success', async () => {
     render(<RegistrationForm />);
-    fireEvent.change(screen.getByLabelText('First Name'), { target: { value: 'Jane' } });
-    fireEvent.change(screen.getByLabelText('Last Name'), { target: { value: 'Smith' } });
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'jane@company.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText('First Name'), {
+      target: { value: 'Jane' },
+    });
+    fireEvent.change(screen.getByLabelText('Last Name'), {
+      target: { value: 'Smith' },
+    });
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'jane@company.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'password123' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => {
@@ -117,9 +142,15 @@ describe('RegistrationForm', () => {
 
   it('should omit last name when left blank', async () => {
     render(<RegistrationForm />);
-    fireEvent.change(screen.getByLabelText('First Name'), { target: { value: 'Jane' } });
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'jane@company.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText('First Name'), {
+      target: { value: 'Jane' },
+    });
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'jane@company.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'password123' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => {
@@ -139,19 +170,25 @@ describe('RegistrationForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Please check your email to verify your account.');
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Please check your email to verify your account.',
+      );
     });
     expect(mockSetUser).not.toHaveBeenCalled();
   });
 
   it('should show error message on failed sign up', async () => {
-    mockCreate.mockResolvedValueOnce({ error: { message: 'Email already in use' } });
+    mockCreate.mockResolvedValueOnce({
+      error: { message: 'Email already in use' },
+    });
 
     render(<RegistrationForm />);
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Email already in use');
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Email already in use',
+      );
     });
   });
 
@@ -162,20 +199,31 @@ describe('RegistrationForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Please try again.');
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Something went wrong. Please try again.',
+      );
     });
   });
 
   it('should show loading state while submitting', async () => {
     mockCreate.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({ error: null }), 50)),
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ error: null }), 50),
+        ),
     );
 
     render(<RegistrationForm />);
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
-    expect(await screen.findByRole('button', { name: 'Creating account…' })).toBeDisabled();
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument());
+    expect(
+      await screen.findByRole('button', { name: 'Creating account…' }),
+    ).toBeDisabled();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Create account' }),
+      ).toBeInTheDocument(),
+    );
   });
 
   it('uses fallbacks when signUp fields are null', async () => {
@@ -183,7 +231,9 @@ describe('RegistrationForm', () => {
     mockSignUp.emailAddress = null as unknown as string;
 
     render(<RegistrationForm />);
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'fallback@co.com' } });
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'fallback@co.com' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => {
@@ -198,7 +248,9 @@ describe('RegistrationForm', () => {
 
   it('should call google sign up on button click', async () => {
     render(<RegistrationForm />);
-    fireEvent.click(screen.getByRole('button', { name: /sign up with google/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /sign up with google/i }),
+    );
 
     await waitFor(() => {
       expect(mockSSO).toHaveBeenCalledWith({

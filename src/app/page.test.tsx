@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 import Page from './page';
 
-const mockRedirect = jest.fn();
+const mockRedirect = vi.fn();
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   redirect: (url: string) => mockRedirect(url),
 }));
 

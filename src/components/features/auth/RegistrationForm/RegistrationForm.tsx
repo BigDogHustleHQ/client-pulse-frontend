@@ -33,7 +33,9 @@ export default function RegistrationForm() {
     });
 
     if (createError) {
-      setError(createError.message ?? 'Something went wrong. Please try again.');
+      setError(
+        createError.message ?? 'Something went wrong. Please try again.',
+      );
       setIsSubmitting(false);
       return;
     }
@@ -73,7 +75,9 @@ export default function RegistrationForm() {
 
       <form onSubmit={handleSubmit} className="auth__form" noValidate>
         <div className="auth__field">
-          <label htmlFor="firstName" className="auth__label">First Name</label>
+          <label htmlFor="firstName" className="auth__label">
+            First Name
+          </label>
           <input
             id="firstName"
             type="text"
@@ -86,7 +90,9 @@ export default function RegistrationForm() {
         </div>
 
         <div className="auth__field">
-          <label htmlFor="lastName" className="auth__label">Last Name</label>
+          <label htmlFor="lastName" className="auth__label">
+            Last Name
+          </label>
           <input
             id="lastName"
             type="text"
@@ -98,7 +104,9 @@ export default function RegistrationForm() {
         </div>
 
         <div className="auth__field">
-          <label htmlFor="email" className="auth__label">Business Email</label>
+          <label htmlFor="email" className="auth__label">
+            Business Email
+          </label>
           <div className="auth__input-wrapper">
             <input
               id="email"
@@ -116,7 +124,9 @@ export default function RegistrationForm() {
         </div>
 
         <div className="auth__field">
-          <label htmlFor="password" className="auth__label">Password</label>
+          <label htmlFor="password" className="auth__label">
+            Password
+          </label>
           <div className="auth__input-wrapper">
             <input
               id="password"
@@ -144,10 +154,16 @@ export default function RegistrationForm() {
         </div>
 
         {error && (
-          <p role="alert" className="auth__error">{error}</p>
+          <p role="alert" className="auth__error">
+            {error}
+          </p>
         )}
 
-        <button type="submit" className="auth__button auth__button--primary" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="auth__button auth__button--primary"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? 'Creating account…' : 'Create account'}
         </button>
       </form>
@@ -168,7 +184,9 @@ export default function RegistrationForm() {
 
       <p className="auth__footer">
         Already have an account?{' '}
-        <Link href="/login" className="auth__link">Log in</Link>
+        <Link href="/login" className="auth__link">
+          Log in
+        </Link>
       </p>
     </div>
   );

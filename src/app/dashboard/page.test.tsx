@@ -1,26 +1,26 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import DashboardPage from './page';
 
-const mockSignOut = jest.fn();
-const mockPush = jest.fn();
-const mockUseAuthStore = jest.fn();
+const mockSignOut = vi.fn();
+const mockPush = vi.fn();
+const mockUseAuthStore = vi.fn();
 
-jest.mock('@clerk/nextjs', () => ({
-  useAuth: jest.fn(() => ({ signOut: mockSignOut })),
+vi.mock('@clerk/nextjs', () => ({
+  useAuth: vi.fn(() => ({ signOut: mockSignOut })),
 }));
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-jest.mock('@/store', () => ({
+vi.mock('@/store', () => ({
   useAuthStore: (selector: (state: { user: unknown }) => unknown) =>
     selector({ user: mockUseAuthStore() }),
 }));
 
 describe('DashboardPage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockSignOut.mockResolvedValue(undefined);
   });
 
@@ -28,7 +28,9 @@ describe('DashboardPage', () => {
     mockUseAuthStore.mockReturnValue(null);
     render(<DashboardPage />);
 
-    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Dashboard' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Total Customers')).toBeInTheDocument();
     expect(screen.getByText('Active Workflows')).toBeInTheDocument();
     expect(screen.getByText('Integrations')).toBeInTheDocument();
@@ -43,7 +45,12 @@ describe('DashboardPage', () => {
   });
 
   it('shows personalised greeting when user has a first name', () => {
-    mockUseAuthStore.mockReturnValue({ firstName: 'Jane', lastName: 'Smith', email: 'jane@co.com', clerkId: '1' });
+    mockUseAuthStore.mockReturnValue({
+      firstName: 'Jane',
+      lastName: 'Smith',
+      email: 'jane@co.com',
+      clerkId: '1',
+    });
     render(<DashboardPage />);
 
     expect(screen.getByText('Welcome back, Jane')).toBeInTheDocument();

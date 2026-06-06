@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import DashboardLayout from './layout';
 
-jest.mock('@/components/SessionGuard', () => ({
+vi.mock('@/components/SessionGuard', () => ({
   __esModule: true,
   default: () => <div data-testid="session-guard" />,
 }));
 
-jest.mock('@/components/UserSync', () => ({
+vi.mock('@/components/UserSync', () => ({
   __esModule: true,
   default: () => <div data-testid="user-sync" />,
 }));
