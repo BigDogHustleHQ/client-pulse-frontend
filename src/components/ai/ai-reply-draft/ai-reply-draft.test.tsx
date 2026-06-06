@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
-import { AIReplyDraft, confidenceTone } from './ai-reply-draft';
+import { AIReplyDraft } from './ai-reply-draft';
 import { MockAIProvider } from '../mock-ai-provider/mock-ai-provider';
 
 const TOKENS = ['Draft ', 'reply ', 'body'];
@@ -17,33 +17,57 @@ const renderDraft = (
 };
 
 describe('AIReplyDraft', () => {
-  it('renders the AI-drafted body', async () => {
+  it('populates the editable textbox with the AI draft', async () => {
     renderDraft();
-    expect(await screen.findByText('Draft reply body')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('Draft reply body')).toBeEnabled();
   });
 
-  it('shows a confidence pill', async () => {
-    renderDraft({ confidence: 0.9 });
-    expect(await screen.findByText('90% confident')).toBeInTheDocument();
+  it('submits with the drafted value', async () => {
+    const onSubmit = jest.fn();
+    renderDraft({ onSubmit });
+    await screen.findByDisplayValue('Draft reply body');
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+    expect(onSubmit).toHaveBeenCalledWith('Draft reply body');
   });
 
-  it('approves with the drafted value', async () => {
-    const onApprove = jest.fn();
-    renderDraft({ onApprove });
-    await screen.findByText('Draft reply body');
-    await userEvent.click(screen.getByRole('button', { name: /approve/i }));
-    expect(onApprove).toHaveBeenCalledWith('Draft reply body');
+  it('shows sent feedback after submitting', async () => {
+    renderDraft();
+    await screen.findByDisplayValue('Draft reply body');
+    const submit = screen.getByRole('button', { name: /submit/i });
+    await userEvent.click(submit);
+    expect(await screen.findByRole('button', { name: /sent/i })).toBeDisabled();
   });
 
-  it('confidenceTone thresholds', () => {
-    expect(confidenceTone(0.9)).toBe('success');
-    expect(confidenceTone(0.6)).toBe('warning');
-    expect(confidenceTone(0.2)).toBe('danger');
+  it('lets the user edit the draft inline before submitting', async () => {
+    const onSubmit = jest.fn();
+    const onChange = jest.fn();
+    renderDraft({ onSubmit, onChange });
+    const box = await screen.findByDisplayValue('Draft reply body');
+    await userEvent.clear(box);
+    await userEvent.type(box, 'Edited reply');
+    expect(onChange).toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+    expect(onSubmit).toHaveBeenCalledWith('Edited reply');
+  });
+
+  it('requests a fresh draft via regenerate', async () => {
+    const onRegenerate = jest.fn();
+    renderDraft({ onRegenerate });
+    await screen.findByDisplayValue('Draft reply body');
+    await userEvent.click(screen.getByRole('button', { name: /regenerate/i }));
+    expect(onRegenerate).toHaveBeenCalled();
+    // The mock re-runs and repopulates the textbox.
+    expect(await screen.findByDisplayValue('Draft reply body')).toBeEnabled();
+  });
+
+  it('disables Submit while there is no draft text', () => {
+    renderDraft({ autoDraft: false });
+    expect(screen.getByRole('button', { name: /submit/i })).toBeDisabled();
   });
 
   it('has no axe violations', async () => {
     const { container } = renderDraft();
-    await screen.findByText('Draft reply body');
+    await screen.findByDisplayValue('Draft reply body');
     expect(await axe(container)).toHaveNoViolations();
   });
 });

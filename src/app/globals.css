@@ -49,6 +49,37 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-plane-launch: plane-launch 0.45s cubic-bezier(0.4, 0, 0.2, 1)
+    forwards;
+  --animate-plane-land: plane-land 0.35s ease-out 0.1s both;
+}
+
+/* Submit "paper-plane launch": the Send icon winds up, then flies off
+   up-and-right while the confirming check lands in its place. */
+@keyframes plane-launch {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(-1px, 1px) rotate(-10deg) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(12px, -14px) rotate(20deg) scale(0.5);
+  }
+}
+
+@keyframes plane-land {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ClientPulse warm theme — cream background, olive primary, terracotta brand accent */

@@ -25,10 +25,9 @@ const meta = {
   tags: ['autodocs'],
   args: {
     prompt: 'Reply to this 5-star review',
-    confidence: 0.92,
-    onApprove: fn(),
-    onEdit: fn(),
-    onReject: fn(),
+    onSubmit: fn(),
+    onChange: fn(),
+    onRegenerate: fn(),
   },
   decorators: [
     (Story) => (
@@ -44,17 +43,37 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const HighConfidence: Story = {};
+export const Default: Story = {};
 
-export const LowConfidence: Story = {
-  args: { confidence: 0.42 },
-};
-
-export const ApproveFlow: Story = {
+export const SubmitFlow: Story = {
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
-    await canvas.findByText(/thrilled you enjoyed your visit/i);
-    await userEvent.click(canvas.getByRole('button', { name: /approve/i }));
-    await expect(args.onApprove).toHaveBeenCalled();
+    await canvas.findByDisplayValue(/thrilled you enjoyed your visit/i);
+    await userEvent.click(canvas.getByRole('button', { name: /submit/i }));
+    await expect(args.onSubmit).toHaveBeenCalled();
+  },
+};
+
+export const EditThenSubmit: Story = {
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    const box = await canvas.findByDisplayValue(
+      /thrilled you enjoyed your visit/i,
+    );
+    await userEvent.clear(box);
+    await userEvent.type(box, 'Thanks Jordan — see you next time!');
+    await userEvent.click(canvas.getByRole('button', { name: /submit/i }));
+    await expect(args.onSubmit).toHaveBeenCalledWith(
+      'Thanks Jordan — see you next time!',
+    );
+  },
+};
+
+export const Regenerate: Story = {
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await canvas.findByDisplayValue(/thrilled you enjoyed your visit/i);
+    await userEvent.click(canvas.getByRole('button', { name: /regenerate/i }));
+    await expect(args.onRegenerate).toHaveBeenCalled();
   },
 };
