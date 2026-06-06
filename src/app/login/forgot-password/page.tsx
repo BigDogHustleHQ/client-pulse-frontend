@@ -27,11 +27,11 @@ const ForgotPasswordPage = () => {
 
       <footer className="login-footer">
         <div className="login-footer__left">
-          <span className="login-footer__brand">Client Pulse</span>
+          <span className="login-footer__brand">ClientPulse</span>
           <span className="login-footer__sep" aria-hidden="true">
             |
           </span>
-          <span>© {year} Client Pulse. All rights reserved.</span>
+          <span>© {year} ClientPulse. All rights reserved.</span>
         </div>
         <nav className="login-footer__nav" aria-label="Footer">
           <a href="#">Privacy Policy</a>
