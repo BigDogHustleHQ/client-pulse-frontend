@@ -17,11 +17,11 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
-    // Tooling output + local scratch dirs — not source.
+    // Generated test/build artifacts + local scratch dirs — not source.
     'coverage/**',
+    'storybook-static/**',
     'playwright-report/**',
     'test-results/**',
-    'storybook-static/**',
     '.remember/**',
     '.swc/**',
   ]),

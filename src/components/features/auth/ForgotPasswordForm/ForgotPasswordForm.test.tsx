@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ForgotPasswordForm from './ForgotPasswordForm';
 
-const mockCreate = jest.fn();
-const mockSendCode = jest.fn();
-const mockVerifyCode = jest.fn();
-const mockSubmitPassword = jest.fn();
-const mockPush = jest.fn();
+const mockCreate = vi.fn();
+const mockSendCode = vi.fn();
+const mockVerifyCode = vi.fn();
+const mockSubmitPassword = vi.fn();
+const mockPush = vi.fn();
 
 const mockSignIn = {
   create: mockCreate,
@@ -16,20 +16,20 @@ const mockSignIn = {
   },
 };
 
-jest.mock('@clerk/nextjs', () => ({
-  useSignIn: jest.fn(() => ({
+vi.mock('@clerk/nextjs', () => ({
+  useSignIn: vi.fn(() => ({
     signIn: mockSignIn,
     fetchStatus: 'idle',
   })),
 }));
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
 describe('ForgotPasswordForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCreate.mockResolvedValue({ error: null });
     mockSendCode.mockResolvedValue({ error: null });
     mockVerifyCode.mockResolvedValue({ error: null });
@@ -409,7 +409,7 @@ describe('ForgotPasswordForm', () => {
   });
 
   it('calls onStepChange when step advances', async () => {
-    const onStepChange = jest.fn();
+    const onStepChange = vi.fn();
     render(<ForgotPasswordForm onStepChange={onStepChange} />);
 
     fireEvent.change(screen.getByLabelText('Email Address'), {

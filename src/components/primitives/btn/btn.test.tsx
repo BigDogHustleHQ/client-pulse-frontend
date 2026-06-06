@@ -4,7 +4,7 @@ import { Btn } from './btn';
 
 describe('Btn', () => {
   it('fires onClick', () => {
-    const onClick = jest.fn();
+    const onClick = vi.fn();
     render(<Btn onClick={onClick}>Save</Btn>);
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     expect(onClick).toHaveBeenCalledTimes(1);
@@ -18,7 +18,7 @@ describe('Btn', () => {
   });
 
   it('does not fire onClick while loading', () => {
-    const onClick = jest.fn();
+    const onClick = vi.fn();
     render(
       <Btn loading onClick={onClick}>
         Save

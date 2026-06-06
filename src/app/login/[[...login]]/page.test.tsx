@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import LoginPage from './page';
 
-jest.mock('@/components/features/auth/LoginForm/LoginForm', () => {
-  const MockLoginForm = () => <div>LoginForm</div>;
-  return MockLoginForm;
-});
+vi.mock('@/components/features/auth/LoginForm/LoginForm', () => ({
+  default: function MockLoginForm() {
+    return <div>LoginForm</div>;
+  },
+}));
 
 describe('LoginPage', () => {
   it('renders the login form', () => {
@@ -14,9 +15,7 @@ describe('LoginPage', () => {
 
   it('renders the brand logo', () => {
     render(<LoginPage />);
-    expect(screen.getAllByText('ClientPulse').length).toBeGreaterThanOrEqual(
-      1,
-    );
+    expect(screen.getAllByText('ClientPulse').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders the hero heading with italic human', () => {

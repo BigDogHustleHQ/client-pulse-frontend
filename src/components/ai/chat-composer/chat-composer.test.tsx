@@ -31,7 +31,7 @@ describe('ChatComposer', () => {
   });
 
   it('fires onResponse with the full text', async () => {
-    const onResponse = jest.fn();
+    const onResponse = vi.fn();
     const user = userEvent.setup();
     renderComposer(<ChatComposer onResponse={onResponse} />);
 

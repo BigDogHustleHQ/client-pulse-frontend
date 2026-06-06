@@ -1,16 +1,20 @@
+import type { Mock } from 'vitest';
 import { GraphQLClient } from 'graphql-request';
 import { gqlFetch } from './graphql';
 
-jest.mock('graphql-request');
+vi.mock('graphql-request', () => ({ GraphQLClient: vi.fn() }));
 
-const mockRequest = jest.fn();
+const mockRequest = vi.fn();
 
 beforeEach(() => {
-  (GraphQLClient as jest.Mock).mockImplementation(() => ({ request: mockRequest }));
+  // Use a function (not an arrow) so the mock is newable as a constructor.
+  (GraphQLClient as Mock).mockImplementation(function () {
+    return { request: mockRequest };
+  });
 });
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
   delete process.env.NEXT_PUBLIC_API_URL;
 });
 
@@ -21,7 +25,10 @@ describe('gqlFetch', () => {
 
     await gqlFetch('query { test }', null);
 
-    expect(GraphQLClient).toHaveBeenCalledWith('http://custom-api/graphql', expect.any(Object));
+    expect(GraphQLClient).toHaveBeenCalledWith(
+      'http://custom-api/graphql',
+      expect.any(Object),
+    );
   });
 
   it('falls back to localhost when NEXT_PUBLIC_API_URL is not set', async () => {
@@ -29,7 +36,10 @@ describe('gqlFetch', () => {
 
     await gqlFetch('query { test }', null);
 
-    expect(GraphQLClient).toHaveBeenCalledWith('http://localhost:4000/graphql', expect.any(Object));
+    expect(GraphQLClient).toHaveBeenCalledWith(
+      'http://localhost:4000/graphql',
+      expect.any(Object),
+    );
   });
 
   it('includes Authorization header when a token is provided', async () => {
@@ -47,7 +57,9 @@ describe('gqlFetch', () => {
 
     await gqlFetch('query { test }', null);
 
-    expect(GraphQLClient).toHaveBeenCalledWith(expect.any(String), { headers: {} });
+    expect(GraphQLClient).toHaveBeenCalledWith(expect.any(String), {
+      headers: {},
+    });
   });
 
   it('returns the resolved value from the client', async () => {
@@ -62,6 +74,8 @@ describe('gqlFetch', () => {
   it('propagates errors thrown by GraphQLClient', async () => {
     mockRequest.mockRejectedValue(new Error('Not authorized'));
 
-    await expect(gqlFetch('query { test }', null)).rejects.toThrow('Not authorized');
+    await expect(gqlFetch('query { test }', null)).rejects.toThrow(
+      'Not authorized',
+    );
   });
 });

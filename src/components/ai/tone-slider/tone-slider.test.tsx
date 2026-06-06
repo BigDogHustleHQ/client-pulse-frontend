@@ -4,7 +4,7 @@ import { ToneSlider } from './tone-slider';
 
 describe('ToneSlider', () => {
   it('fires onChange with the new numeric value', () => {
-    const onChange = jest.fn();
+    const onChange = vi.fn();
     render(<ToneSlider value={0} onChange={onChange} />);
     fireEvent.change(screen.getByLabelText('Tone'), {
       target: { value: '100' },

@@ -23,7 +23,7 @@ describe('AIReplyDraft', () => {
   });
 
   it('submits with the drafted value', async () => {
-    const onSubmit = jest.fn();
+    const onSubmit = vi.fn();
     renderDraft({ onSubmit });
     await screen.findByDisplayValue('Draft reply body');
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
@@ -39,8 +39,8 @@ describe('AIReplyDraft', () => {
   });
 
   it('lets the user edit the draft inline before submitting', async () => {
-    const onSubmit = jest.fn();
-    const onChange = jest.fn();
+    const onSubmit = vi.fn();
+    const onChange = vi.fn();
     renderDraft({ onSubmit, onChange });
     const box = await screen.findByDisplayValue('Draft reply body');
     await userEvent.clear(box);
@@ -51,7 +51,7 @@ describe('AIReplyDraft', () => {
   });
 
   it('requests a fresh draft via regenerate', async () => {
-    const onRegenerate = jest.fn();
+    const onRegenerate = vi.fn();
     renderDraft({ onRegenerate });
     await screen.findByDisplayValue('Draft reply body');
     await userEvent.click(screen.getByRole('button', { name: /regenerate/i }));

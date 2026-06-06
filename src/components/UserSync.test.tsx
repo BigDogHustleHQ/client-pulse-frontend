@@ -1,19 +1,22 @@
+import type { MockedFunction, Mock } from 'vitest';
 import { render } from '@testing-library/react';
 import UserSync from './UserSync';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
-jest.mock('@/hooks/useCurrentUser', () => ({ useCurrentUser: jest.fn() }));
+vi.mock('@/hooks/useCurrentUser', () => ({ useCurrentUser: vi.fn() }));
 
-const mockSetUser = jest.fn();
-jest.mock('@/store', () => ({
-  useAuthStore: (selector: (state: { setUser: jest.Mock }) => jest.Mock) =>
+const mockSetUser = vi.fn();
+vi.mock('@/store', () => ({
+  useAuthStore: (selector: (state: { setUser: Mock }) => Mock) =>
     selector({ setUser: mockSetUser }),
 }));
 
-const mockUseCurrentUser = useCurrentUser as jest.MockedFunction<typeof useCurrentUser>;
+const mockUseCurrentUser = useCurrentUser as MockedFunction<
+  typeof useCurrentUser
+>;
 
 describe('UserSync', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it('renders nothing', () => {
     mockUseCurrentUser.mockReturnValue({ data: undefined } as never);

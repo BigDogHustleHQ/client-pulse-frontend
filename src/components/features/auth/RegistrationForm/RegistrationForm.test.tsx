@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RegistrationForm from './RegistrationForm';
 
-const mockCreate = jest.fn();
-const mockFinalize = jest.fn();
-const mockSSO = jest.fn();
-const mockPush = jest.fn();
-const mockSetUser = jest.fn();
+const mockCreate = vi.fn();
+const mockFinalize = vi.fn();
+const mockSSO = vi.fn();
+const mockPush = vi.fn();
+const mockSetUser = vi.fn();
 
 const mockSignUp = {
   status: 'complete' as string,
@@ -19,25 +19,28 @@ const mockSignUp = {
   sso: mockSSO,
 };
 
-jest.mock('@clerk/nextjs', () => ({
-  useSignUp: jest.fn(() => ({
+vi.mock('@clerk/nextjs', () => ({
+  useSignUp: vi.fn(() => ({
     signUp: mockSignUp,
     fetchStatus: 'idle',
   })),
 }));
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-jest.mock('@/store', () => ({
-  useAuthStore: (selector: (state: { setUser: jest.Mock }) => jest.Mock) =>
-    selector({ setUser: mockSetUser }),
+vi.mock('@/store', () => ({
+  useAuthStore: (
+    selector: (state: {
+      setUser: ReturnType<typeof vi.fn>;
+    }) => ReturnType<typeof vi.fn>,
+  ) => selector({ setUser: mockSetUser }),
 }));
 
 describe('RegistrationForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     mockSignUp.status = 'complete';
     mockSignUp.createdSessionId = 'sess_123';
@@ -228,7 +231,9 @@ describe('RegistrationForm', () => {
     mockSignUp.emailAddress = null as unknown as string;
 
     render(<RegistrationForm />);
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'fallback@co.com' } });
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'fallback@co.com' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() => {

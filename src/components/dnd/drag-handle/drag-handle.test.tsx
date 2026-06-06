@@ -17,7 +17,7 @@ describe('DragHandle', () => {
   });
 
   it('spreads dnd-kit listeners and attributes', () => {
-    const onPointerDown = jest.fn();
+    const onPointerDown = vi.fn();
     render(
       <DragHandle attributes={{ tabIndex: 0 }} listeners={{ onPointerDown }} />,
     );

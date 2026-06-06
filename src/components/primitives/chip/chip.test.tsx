@@ -9,7 +9,7 @@ describe('Chip', () => {
   });
 
   it('fires onRemove when the remove button is clicked', () => {
-    const onRemove = jest.fn();
+    const onRemove = vi.fn();
     render(<Chip onRemove={onRemove}>Vegan</Chip>);
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(onRemove).toHaveBeenCalledTimes(1);

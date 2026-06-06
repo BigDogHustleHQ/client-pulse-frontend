@@ -8,7 +8,7 @@ $cp-input-bg: #f5ede4;
 $cp-border: #e8ddd4;
 $cp-primary: #566b28;
 $cp-primary-hover: #435320;
-$cp-accent: #8c3a14;
+$cp-accent: #8c3a14; // WCAG AA: 7.69:1 white-fg contrast
 $cp-toggle-off: #d1c9be;
 $cp-error-text: #b91c1c;
 $cp-error-bg: #fef2f2;
@@ -227,7 +227,7 @@ $cp-error-border: #fecaca;
 
   &__button {
     width: 100%;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     border: none;
     font-size: 0.9375rem;
     font-weight: 500;

@@ -1,6 +1,6 @@
 import { gqlFetch } from './client';
 
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 const successResponse = (data: unknown) => ({
@@ -13,7 +13,7 @@ const errorResponse = (errors: { message: string }[]) => ({
 
 describe('gqlFetch', () => {
   afterEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
     delete process.env.NEXT_PUBLIC_API_URL;
   });
 
@@ -23,7 +23,10 @@ describe('gqlFetch', () => {
 
     await gqlFetch('query { test }', null);
 
-    expect(mockFetch).toHaveBeenCalledWith('http://custom-api/graphql', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://custom-api/graphql',
+      expect.any(Object),
+    );
   });
 
   it('falls back to localhost when NEXT_PUBLIC_API_URL is not set', async () => {
@@ -31,7 +34,10 @@ describe('gqlFetch', () => {
 
     await gqlFetch('query { test }', null);
 
-    expect(mockFetch).toHaveBeenCalledWith('http://localhost:4000/graphql', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:4000/graphql',
+      expect.any(Object),
+    );
   });
 
   it('includes Authorization header when a token is provided', async () => {
@@ -59,6 +65,8 @@ describe('gqlFetch', () => {
   it('throws with the first error message when the response contains errors', async () => {
     mockFetch.mockResolvedValue(errorResponse([{ message: 'Not authorized' }]));
 
-    await expect(gqlFetch('query { test }', null)).rejects.toThrow('Not authorized');
+    await expect(gqlFetch('query { test }', null)).rejects.toThrow(
+      'Not authorized',
+    );
   });
 });

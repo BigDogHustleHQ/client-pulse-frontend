@@ -30,7 +30,7 @@ describe('MockAIProvider', () => {
   });
 
   it('throws when used outside the provider', () => {
-    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => renderHook(() => useMockAI())).toThrow(/MockAIProvider/);
     spy.mockRestore();
   });

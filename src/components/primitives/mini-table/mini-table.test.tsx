@@ -54,7 +54,7 @@ describe('MiniTable', () => {
 
   it('calls onRowClick when a row is clicked', async () => {
     const user = userEvent.setup();
-    const onRowClick = jest.fn();
+    const onRowClick = vi.fn();
     render(
       <MiniTable
         columns={columns}
@@ -73,7 +73,7 @@ describe('MiniTable', () => {
 
   it('activates a row via the keyboard and marks the selected row', async () => {
     const user = userEvent.setup();
-    const onRowClick = jest.fn();
+    const onRowClick = vi.fn();
     render(
       <MiniTable
         columns={columns}

@@ -1,17 +1,18 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginForm from './LoginForm';
 
-const mockCreate = jest.fn();
-const mockFinalize = jest.fn();
-const mockSSO = jest.fn();
-const mockPush = jest.fn();
-const mockSetUser = jest.fn();
-const mockPersistSession = jest.fn();
-const mockMarkTemporarySession = jest.fn();
+const mockCreate = vi.fn();
+const mockFinalize = vi.fn();
+const mockSSO = vi.fn();
+const mockPush = vi.fn();
+const mockSetUser = vi.fn();
+const mockPersistSession = vi.fn();
+const mockMarkTemporarySession = vi.fn();
 
-jest.mock('@/lib/clerk/session', () => ({
+vi.mock('@/lib/clerk/session', () => ({
   persistSession: (...args: unknown[]) => mockPersistSession(...args),
-  markTemporarySession: (...args: unknown[]) => mockMarkTemporarySession(...args),
+  markTemporarySession: (...args: unknown[]) =>
+    mockMarkTemporarySession(...args),
 }));
 
 const mockSignIn = {
@@ -24,25 +25,28 @@ const mockSignIn = {
   sso: mockSSO,
 };
 
-jest.mock('@clerk/nextjs', () => ({
-  useSignIn: jest.fn(() => ({
+vi.mock('@clerk/nextjs', () => ({
+  useSignIn: vi.fn(() => ({
     signIn: mockSignIn,
     fetchStatus: 'idle',
   })),
 }));
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-jest.mock('@/store', () => ({
-  useAuthStore: (selector: (state: { setUser: jest.Mock }) => jest.Mock) =>
-    selector({ setUser: mockSetUser }),
+vi.mock('@/store', () => ({
+  useAuthStore: (
+    selector: (state: {
+      setUser: ReturnType<typeof vi.fn>;
+    }) => ReturnType<typeof vi.fn>,
+  ) => selector({ setUser: mockSetUser }),
 }));
 
 describe('LoginForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     mockSignIn.status = 'complete';
     mockSignIn.createdSessionId = 'session_123';
@@ -212,12 +216,21 @@ describe('LoginForm', () => {
   it('uses fallbacks when signIn fields are null', async () => {
     mockSignIn.createdSessionId = null as unknown as string;
     mockSignIn.identifier = null as unknown as string;
-    mockSignIn.userData = { firstName: null as unknown as string, lastName: null as unknown as string };
+    mockSignIn.userData = {
+      firstName: null as unknown as string,
+      lastName: null as unknown as string,
+    };
 
     render(<LoginForm />);
-    fireEvent.change(screen.getByLabelText('Business Email'), { target: { value: 'fallback@co.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'pw' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.change(screen.getByLabelText('Business Email'), {
+      target: { value: 'fallback@co.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'pw' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
     await waitFor(() => {
       expect(mockSetUser).toHaveBeenCalledWith({
@@ -232,7 +245,9 @@ describe('LoginForm', () => {
   it('calls persistSession when Remember Me is checked', async () => {
     render(<LoginForm />);
     fireEvent.click(screen.getByLabelText('Remember me'));
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
     await waitFor(() => {
       expect(mockPersistSession).toHaveBeenCalled();
@@ -242,7 +257,9 @@ describe('LoginForm', () => {
 
   it('calls markTemporarySession when Remember Me is unchecked', async () => {
     render(<LoginForm />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in to platform' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sign in to platform' }),
+    );
 
     await waitFor(() => {
       expect(mockMarkTemporarySession).toHaveBeenCalled();

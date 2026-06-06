@@ -1,3 +1,4 @@
+import type { MockedFunction } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@clerk/nextjs';
@@ -5,19 +6,24 @@ import { useCurrentUser } from './useCurrentUser';
 import { gqlFetch } from '@/lib/api/graphql';
 import { GET_CURRENT_USER } from '@/lib/api/queries';
 
-jest.mock('@tanstack/react-query', () => ({ useQuery: jest.fn(() => ({ data: undefined })) }));
-jest.mock('@clerk/nextjs', () => ({ useAuth: jest.fn() }));
-jest.mock('@/lib/api/graphql', () => ({ gqlFetch: jest.fn() }));
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(() => ({ data: undefined })),
+}));
+vi.mock('@clerk/nextjs', () => ({ useAuth: vi.fn() }));
+vi.mock('@/lib/api/graphql', () => ({ gqlFetch: vi.fn() }));
 
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
-const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-const mockGqlFetch = gqlFetch as jest.MockedFunction<typeof gqlFetch>;
-const mockGetToken = jest.fn();
+const mockUseQuery = useQuery as MockedFunction<typeof useQuery>;
+const mockUseAuth = useAuth as MockedFunction<typeof useAuth>;
+const mockGqlFetch = gqlFetch as MockedFunction<typeof gqlFetch>;
+const mockGetToken = vi.fn();
 
 describe('useCurrentUser', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseAuth.mockReturnValue({ getToken: mockGetToken, isSignedIn: true } as never);
+    vi.clearAllMocks();
+    mockUseAuth.mockReturnValue({
+      getToken: mockGetToken,
+      isSignedIn: true,
+    } as never);
     mockUseQuery.mockReturnValue({ data: undefined } as never);
   });
 
@@ -30,7 +36,10 @@ describe('useCurrentUser', () => {
   });
 
   it('passes enabled: false when the user is not signed in', () => {
-    mockUseAuth.mockReturnValue({ getToken: mockGetToken, isSignedIn: false } as never);
+    mockUseAuth.mockReturnValue({
+      getToken: mockGetToken,
+      isSignedIn: false,
+    } as never);
 
     renderHook(() => useCurrentUser());
 
@@ -40,7 +49,14 @@ describe('useCurrentUser', () => {
   });
 
   it('queryFn fetches with the Clerk token', async () => {
-    const userData = { getCurrentUser: { id: '1', email: 'a@b.com', firstName: null, lastName: null } };
+    const userData = {
+      getCurrentUser: {
+        id: '1',
+        email: 'a@b.com',
+        firstName: null,
+        lastName: null,
+      },
+    };
     mockGetToken.mockResolvedValue('test-token');
     mockGqlFetch.mockResolvedValue(userData as never);
 

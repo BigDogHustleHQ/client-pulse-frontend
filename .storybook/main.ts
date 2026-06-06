@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/nextjs-vite';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const clerkMock = path.resolve(dirname, './mocks/clerk-nextjs.tsx');
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
@@ -13,17 +14,23 @@ const config: StorybookConfig = {
     '@storybook/addon-docs',
     '@storybook/addon-mcp',
   ],
-  framework: '@storybook/nextjs-vite',
+  framework: {
+    name: '@storybook/nextjs-vite',
+    options: {},
+  },
   staticDirs: ['../public'],
-  viteFinal: async (viteConfig) => {
+  async viteFinal(viteConfig) {
     viteConfig.resolve ??= {};
     viteConfig.resolve.alias = {
       ...viteConfig.resolve.alias,
       '@': path.resolve(dirname, '../src'),
-      // Render auth forms without a ClerkProvider or live auth backend.
-      '@clerk/nextjs': path.resolve(dirname, './mocks/clerk.tsx'),
+      // Components pull Clerk hooks at module load; stub them so stories render
+      // without a real Clerk session. Applies to both the Storybook build and
+      // the Vitest browser test run.
+      '@clerk/nextjs': clerkMock,
     };
     return viteConfig;
   },
 };
+
 export default config;

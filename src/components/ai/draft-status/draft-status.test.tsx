@@ -30,7 +30,7 @@ describe('DraftStatus', () => {
   });
 
   it('renders Undo only when onUndo is provided and fires it', async () => {
-    const onUndo = jest.fn();
+    const onUndo = vi.fn();
     const { rerender } = render(<DraftStatus resolution="approved" />);
     expect(
       screen.queryByRole('button', { name: /undo/i }),

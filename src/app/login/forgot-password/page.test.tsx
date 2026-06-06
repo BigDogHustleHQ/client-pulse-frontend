@@ -3,14 +3,17 @@ import ForgotPasswordPage from './page';
 
 let capturedOnStepChange: ((index: number) => void) | undefined;
 
-jest.mock('@/components/features/auth/ForgotPasswordForm/ForgotPasswordForm', () => ({
-  __esModule: true,
-  default: ({ onStepChange }: { onStepChange?: (i: number) => void }) => {
-    capturedOnStepChange = onStepChange;
-    return <div data-testid="forgot-password-form" />;
-  },
-  STEPS: ['email', 'code', 'password'],
-}));
+vi.mock(
+  '@/components/features/auth/ForgotPasswordForm/ForgotPasswordForm',
+  () => ({
+    __esModule: true,
+    default: ({ onStepChange }: { onStepChange?: (i: number) => void }) => {
+      capturedOnStepChange = onStepChange;
+      return <div data-testid="forgot-password-form" />;
+    },
+    STEPS: ['email', 'code', 'password'],
+  }),
+);
 
 describe('ForgotPasswordPage', () => {
   beforeEach(() => {
@@ -24,7 +27,9 @@ describe('ForgotPasswordPage', () => {
 
   it('has an accessible label on the main region', () => {
     render(<ForgotPasswordPage />);
-    expect(screen.getByRole('main', { name: 'Reset password' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('main', { name: 'Reset password' }),
+    ).toBeInTheDocument();
   });
 
   it('renders three step dots', () => {
@@ -69,7 +74,9 @@ describe('ForgotPasswordPage', () => {
 
   it('renders footer navigation links', () => {
     render(<ForgotPasswordPage />);
-    expect(screen.getByRole('navigation', { name: 'Footer' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('navigation', { name: 'Footer' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Privacy Policy')).toBeInTheDocument();
     expect(screen.getByText('Terms of Service')).toBeInTheDocument();
     expect(screen.getByText('Security')).toBeInTheDocument();
