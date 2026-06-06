@@ -8,6 +8,9 @@ type Column<T> = {
   render?: (row: T) => React.ReactNode;
 };
 
+const alignClass = (a?: Column<unknown>['align']) =>
+  a === 'right' ? 'text-right' : a === 'center' ? 'text-center' : 'text-left';
+
 const MiniTable = <T extends Record<string, unknown>>({
   columns,
   data,
@@ -31,9 +34,6 @@ const MiniTable = <T extends Record<string, unknown>>({
   /** Mark the active row (adds aria-selected + a selected style). */
   isRowSelected?: (row: T, index: number) => boolean;
 }) => {
-  const alignClass = (a?: Column<T>['align']) =>
-    a === 'right' ? 'text-right' : a === 'center' ? 'text-center' : 'text-left';
-
   return (
     <table
       data-slot="mini-table"

@@ -1,8 +1,13 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { ChartEmpty } from '../chart-empty';
 
 export type HeatmapCell = number | null | undefined;
 
+/** Opacity stops shown in the legend, from least to most intense. */
+const LEGEND_STOPS = [0.15, 0.4, 0.65, 0.85, 1];
+
+/** Clamp an intensity value into the [0, 1] range. */
 export const intensity = (value: number, max: number): number => {
   if (max <= 0) return 0;
   return Math.max(0, Math.min(1, value / max));
@@ -28,6 +33,7 @@ const Heatmap = ({
   formatValue?: (value: number) => React.ReactNode;
 }) => {
   const cols = data.reduce((acc, row) => Math.max(acc, row.length), 0);
+  const colIndices = Array.from({ length: cols }, (_, i) => i);
   const isEmpty = data.length === 0 || cols === 0;
 
   const computedMax =
@@ -42,19 +48,7 @@ const Heatmap = ({
     );
 
   if (isEmpty) {
-    return (
-      <div
-        data-slot="heatmap"
-        className={cn(
-          'flex min-h-32 items-center justify-center rounded-xl bg-card p-5 text-sm text-muted-foreground ring-1 ring-foreground/10',
-          'animate-in fade-in-0 duration-500 motion-reduce:animate-none',
-          className,
-        )}
-        {...props}
-      >
-        No data
-      </div>
-    );
+    return <ChartEmpty data-slot="heatmap" className={className} {...props} />;
   }
 
   return (
@@ -77,7 +71,7 @@ const Heatmap = ({
         {colLabels && (
           <div role="row" className="contents">
             <span role="columnheader" aria-hidden="true" />
-            {Array.from({ length: cols }).map((_, c) => (
+            {colIndices.map((c) => (
               <span
                 key={`col-${c}`}
                 role="columnheader"
@@ -96,7 +90,7 @@ const Heatmap = ({
             >
               {rowLabels?.[r]}
             </span>
-            {Array.from({ length: cols }).map((_, c) => {
+            {colIndices.map((c) => {
               const cell = row[c];
               const missing = cell === null || cell === undefined;
               const t = missing ? 0 : intensity(cell, computedMax);
@@ -132,7 +126,7 @@ const Heatmap = ({
         <span>{legendLabel}</span>
         <span>Less</span>
         <div className="flex items-center gap-0.5" aria-hidden="true">
-          {[0.15, 0.4, 0.65, 0.85, 1].map((o) => (
+          {LEGEND_STOPS.map((o) => (
             <span
               key={o}
               className="size-3 rounded-sm"

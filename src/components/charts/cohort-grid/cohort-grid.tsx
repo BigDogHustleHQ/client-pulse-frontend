@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { ChartEmpty } from '../chart-empty';
 
 export type Cohort = {
   label: string;
@@ -23,21 +24,12 @@ const CohortGrid = ({
 }) => {
   const cols =
     periods ?? data.reduce((acc, c) => Math.max(acc, c.retention.length), 0);
+  const colIndices = Array.from({ length: cols }, (_, i) => i);
   const isEmpty = data.length === 0 || cols === 0;
 
   if (isEmpty) {
     return (
-      <div
-        data-slot="cohort-grid"
-        className={cn(
-          'flex min-h-32 items-center justify-center rounded-xl bg-card p-5 text-sm text-muted-foreground ring-1 ring-foreground/10',
-          'animate-in fade-in-0 duration-500 motion-reduce:animate-none',
-          className,
-        )}
-        {...props}
-      >
-        No data
-      </div>
+      <ChartEmpty data-slot="cohort-grid" className={className} {...props} />
     );
   }
 
@@ -60,7 +52,7 @@ const CohortGrid = ({
             <th className="px-2 py-1 text-right font-medium text-muted-foreground">
               Size
             </th>
-            {Array.from({ length: cols }).map((_, i) => (
+            {colIndices.map((i) => (
               <th
                 key={`p-${i}`}
                 className="px-2 py-1 text-center font-medium text-muted-foreground"
@@ -79,7 +71,7 @@ const CohortGrid = ({
               <td className="px-2 py-1 text-right tabular-nums text-muted-foreground">
                 {cohort.size.toLocaleString()}
               </td>
-              {Array.from({ length: cols }).map((_, c) => {
+              {colIndices.map((c) => {
                 const pct = cohort.retention[c];
                 const missing = pct === null || pct === undefined;
                 const t = missing ? 0 : Math.max(0, Math.min(1, pct / 100));
