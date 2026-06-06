@@ -1,0 +1,29 @@
+name: build
+
+# Production `next build` (Turbopack) — verifies the app compiles for deploy.
+# Independent of e2e/visual so a broken build is its own signal. Reusable —
+# called by ci.yml.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    env:
+      # Dummy Clerk keys so the build resolves without real secrets. NEXT_PUBLIC_*
+      # values are inlined at build time, so they must be present here. Safe to
+      # expose — they reference no real tenant (mirrors e2e.yml).
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk
+      CLERK_SECRET_KEY: sk_test_ZHVtbXlfc2VjcmV0X2tleV9mb3JfY2lfYnVpbGRzXw
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
