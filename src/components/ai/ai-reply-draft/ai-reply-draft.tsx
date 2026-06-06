@@ -85,6 +85,8 @@ const AIReplyDraft = ({
 
   const handleSubmit = () => {
     onSubmit?.(draft);
+    // Clear the textbox once submitted; the draft has been sent off.
+    setDrafted({ prompt, nonce, text: '' });
     setSent(true);
     if (sentTimer.current) clearTimeout(sentTimer.current);
     sentTimer.current = setTimeout(() => setSent(false), 1400);

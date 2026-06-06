@@ -30,6 +30,13 @@ describe('AIReplyDraft', () => {
     expect(onSubmit).toHaveBeenCalledWith('Draft reply body');
   });
 
+  it('clears the textbox after submitting', async () => {
+    renderDraft();
+    const box = await screen.findByDisplayValue('Draft reply body');
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+    expect(box).toHaveValue('');
+  });
+
   it('shows sent feedback after submitting', async () => {
     renderDraft();
     await screen.findByDisplayValue('Draft reply body');
